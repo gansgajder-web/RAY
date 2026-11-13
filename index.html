@@ -54,7 +54,6 @@
             }
         }
 
-        /* Верхній рядок: Профіль зліва, Гаманець справа */
         .top-bar {
             width: 100%;
             max-width: 380px;
@@ -94,7 +93,6 @@
             text-overflow: ellipsis;
         }
 
-        /* Блок курсу токена під гаманцем і ніком */
         .price-bar {
             width: 100%;
             max-width: 380px;
@@ -174,6 +172,26 @@
         .btn:hover {
             transform: scale(1.05);
         }
+        
+        /* Кнопка керування музикою */
+        .music-btn {
+            display: inline-block;
+            background: rgba(18, 24, 38, 0.9);
+            border: 1px solid #00d2ff;
+            color: #00d2ff;
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            animation: neonPulse 4s infinite;
+            transition: all 0.3s ease;
+        }
+        .music-btn:hover {
+            background: rgba(0, 210, 255, 0.2);
+        }
+
         .nav-boxes {
             display: flex;
             justify-content: space-between;
@@ -205,6 +223,11 @@
 </head>
 <body>
 
+    <!-- Аудіо файл (можете замінити посилання на свій власний MP3-файл у репозиторії) -->
+    <audio id="bg-music" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=cyberpunk-2099-107016.mp3" type="audio/mpeg">
+    </audio>
+
     <!-- Верхня панель: Нік зліва, Гаманець справа -->
     <div class="top-bar">
         <div class="tg-profile">
@@ -214,7 +237,7 @@
         <div id="ton-connect"></div>
     </div>
 
-    <!-- Плашка курсу під ніком і гаманцем (клік відкриває графік на GeckoTerminal) -->
+    <!-- Плашка курсу -->
     <a href="https://www.geckoterminal.com/ton/pools/EQAwkja00aUNZX1bYH4_MlxLvQoH4-JRtfBXqSe4FEKhfwjY" target="_blank" class="price-bar">
         <span class="price-label">📈 Курс RAY:</span>
         <span id="ray-price" class="price-value">Завантаження...</span>
@@ -227,6 +250,10 @@
         <h1>RAY TOKEN</h1>
         <p>Офіційний токен проєкту в мережі TON. Швидкий, децентралізований та створений для майбутнього.</p>
         
+        <!-- Кнопка музики всередині картки -->
+        <button id="audio-toggle-btn" class="music-btn" onclick="toggleMusic()">▶ Увімкнути музику</button>
+        <br>
+
         <a href="https://app.ston.fi/swap?ft=TON&tt=EQA_i0MM2zcBtmdJIlnroEIF7blopaJ7s7Jx95z2rvgRr3Y_" target="_blank" class="btn">Купити на STON.fi</a>
 
         <div class="nav-boxes">
@@ -258,7 +285,25 @@
             buttonRootId: 'ton-connect'
         });
 
-        // Отримання актуальної ціни RAY з GeckoTerminal API
+        // Керування реальним аудіотреком
+        const music = document.getElementById('bg-music');
+        const audioBtn = document.getElementById('audio-toggle-btn');
+        music.volume = 0.4; // Встановлюємо комфортну гучність (40%)
+
+        function toggleMusic() {
+            if (music.paused) {
+                music.play().then(() => {
+                    audioBtn.textContent = '❚❚ Вимкнути музику';
+                }).catch(e => {
+                    console.log("Автозапуск заблоковано браузером", e);
+                });
+            } else {
+                music.pause();
+                audioBtn.textContent = '▶ Увімкнути музику';
+            }
+        }
+
+        // GeckoTerminal API для курсу
         const POOL_ADDRESS = 'EQAwkja00aUNZX1bYH4_MlxLvQoH4-JRtfBXqSe4FEKhfwjY';
         
         async function fetchRayPrice() {
@@ -268,11 +313,9 @@
                 const data = await response.json();
                 const attr = data.data.attributes;
                 
-                // Ціна в доларах та зміна за 24 години
                 const priceUsd = parseFloat(attr.base_token_price_usd);
                 const change24h = parseFloat(attr.price_change_percentage.h24);
                 
-                // Форматуємо красиве відображення ціни (до 6 знаків після коми для дрібних значень)
                 const formattedPrice = priceUsd < 0.01 ? priceUsd.toFixed(6) : priceUsd.toFixed(4);
                 const sign = change24h >= 0 ? '+' : '';
                 const changeColor = change24h >= 0 ? '#00ffcc' : '#ff4d6d';
@@ -284,7 +327,7 @@
         }
 
         fetchRayPrice();
-        setInterval(fetchRayPrice, 30000); // Оновлення курсу кожні 30 секунд
+        setInterval(fetchRayPrice, 30000);
     </script>
 
 </body>
