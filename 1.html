@@ -133,7 +133,7 @@
             letter-spacing: 1px;
         }
         .balance-amount {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
             color: #00ffcc;
             text-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
@@ -324,7 +324,7 @@
         <div id="view-mine" class="view-section active">
             <div class="balance-box">
                 <div class="balance-label">Намайнено RAY</div>
-                <div class="balance-amount" id="balance">0.0000000000</div>
+                <div class="balance-amount" id="balance">Завантаження...</div>
             </div>
 
             <div class="coin-wrapper" id="tap-coin">
@@ -341,7 +341,7 @@
                 </div>
             </div>
 
-            <div class="status-text" id="sync-status">Синхронізація з хмарою...</div>
+            <div class="status-text" id="sync-status">Зв'язок з хмарою...</div>
         </div>
 
         <!-- ВКЛАДКА 2: БУСТИ -->
@@ -440,7 +440,6 @@
             buttonRootId: 'ton-connect'
         });
 
-        // Ігрові параметри (нагорода 0.0000000001)
         let balance = 0;
         let energy = 500;
         let maxEnergy = 500;
@@ -455,7 +454,6 @@
         const syncStatusEl = document.getElementById('sync-status');
         const coinEl = document.getElementById('tap-coin');
 
-        // Аудіо синтезатор кліку
         let audioCtx = null;
         function playClickSound() {
             try {
@@ -508,12 +506,10 @@
                 if (data) {
                     balance = parseFloat(data.balance) || 0;
                     
-                    // Перевірка на неактивність понад 4 години (Anti-AFK)
                     const lastUpdated = data.updated_at ? new Date(data.updated_at).getTime() : Date.now();
                     const hoursPassed = (Date.now() - lastUpdated) / (1000 * 60 * 60);
 
                     if (hoursPassed >= 4) {
-                        // Якщо не заходив понад 4 години — скидаємо бусти до базових
                         maxEnergy = 500;
                         tapReward = 0.0000000001;
                         energy = 500;
@@ -635,7 +631,7 @@
             energy -= 1;
             updateUI();
             scheduleSave();
-            playClickSound(); // Звук тапу
+            playClickSound();
 
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
