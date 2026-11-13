@@ -64,6 +64,7 @@
             padding: 6px 12px;
             font-size: 13px;
             color: #d1d5db;
+            cursor: pointer;
         }
         .screen-content {
             display: none;
@@ -188,18 +189,67 @@
             background: linear-gradient(145deg, #12101f, #1b162c);
             border: 1px solid rgba(147, 51, 234, 0.4);
             border-radius: 24px;
-            padding: 24px;
-            text-align: center;
+            padding: 20px;
+            text-align: left;
         }
         .section-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             color: #fff;
-            margin-bottom: 10px;
+            margin-bottom: 14px;
+            text-align: center;
         }
-        .section-desc {
-            font-size: 14px;
+        .profile-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .profile-info-row:last-child {
+            border-bottom: none;
+        }
+        .profile-label {
             color: #9ca3af;
+        }
+        .profile-val {
+            color: #fff;
+            font-weight: 500;
+            text-align: right;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .boost-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .boost-info h4 {
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .boost-info p {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .boost-btn {
+            background: #9333ea;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .boost-btn:active {
+            opacity: 0.8;
         }
         .nav-bar {
             display: flex;
@@ -288,9 +338,9 @@
     <div class="user-row">
         <div class="user-tag">
             <div class="avatar-ph">👑</div>
-            <span>@Leslav</span>
+            <span id="headerUsername">@Leslav</span>
         </div>
-        <div class="wallet-badge">UQDX...RtWw ⌄</div>
+        <div class="wallet-badge" id="headerWallet" title="Підключений гаманець TON">UQDX...RtWw ⌄</div>
     </div>
 
     <!-- Головна вкладка -->
@@ -325,8 +375,14 @@
     <!-- Вкладка Буст -->
     <div class="screen-content" id="screen-boost">
         <div class="section-card">
-            <div class="section-title">Буст майнінгу</div>
-            <div class="section-desc">Скоро з'явиться можливість покращення швидкості.</div>
+            <div class="section-title">Прискорювач майнінгу</div>
+            <div class="boost-item">
+                <div class="boost-info">
+                    <h4>Турбо-режим x2</h4>
+                    <p>Подвоює швидкість майнінгу</p>
+                </div>
+                <button class="boost-btn" id="buyBoostBtn">Купити</button>
+            </div>
         </div>
     </div>
 
@@ -334,14 +390,29 @@
     <div class="screen-content" id="screen-profile">
         <div class="section-card">
             <div class="section-title">Профіль користувача</div>
-            <div class="section-desc">@Leslav<br>Гаманець: UQDX...RtWw</div>
+            <div class="profile-info-row">
+                <span class="profile-label">Акаунт Telegram:</span>
+                <span class="profile-val" id="profileUser">@Leslav</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-label">Гаманець (TON):</span>
+                <span class="profile-val" id="profileWallet">UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-label">Швидкість майнінгу:</span>
+                <span class="profile-val" id="profileSpeed">0.0000000001/с</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-label">Статус:</span>
+                <span class="profile-val" style="color: #f39c12;">Засновник 👑</span>
+            </div>
         </div>
     </div>
 
     <!-- Навігація внизу -->
     <div class="nav-bar">
         <button class="nav-item active" onclick="switchTab('home', this)">
-            <span>🏠</span>Головна
+            <span>🔥</span>Головна
         </button>
         <button class="nav-item" onclick="switchTab('boost', this)">
             <span>⚡</span>Буст
@@ -366,24 +437,53 @@
             speed: 0.0000000001,
             energy: 500,
             maxEnergy: 500,
+            username: "@Leslav",
+            wallet: "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw",
+            boosted: false,
             lastTime: Date.now()
         };
 
         const balanceDisplay = document.getElementById('balanceDisplay');
         const coinButton = document.getElementById('coinButton');
         const saveBtn = document.getElementById('saveBtn');
+        const buyBoostBtn = document.getElementById('buyBoostBtn');
         const energyText = document.getElementById('energyText');
         const energyFill = document.getElementById('energyFill');
         
+        const headerUsername = document.getElementById('headerUsername');
+        const headerWallet = document.getElementById('headerWallet');
+        const profileUser = document.getElementById('profileUser');
+        const profileWallet = document.getElementById('profileWallet');
+        const profileSpeed = document.getElementById('profileSpeed');
+
         const modalOverlay = document.getElementById('modalOverlay');
         const modalText = document.getElementById('modalText');
         const modalClose = document.getElementById('modalClose');
+
+        // Підтягуємо реальні дані з Telegram WebApp, якщо доступно
+        function initTelegramUser() {
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+                const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+                if (tgUser) {
+                    if (tgUser.username) {
+                        rayData.username = "@" + tgUser.username;
+                    } else if (tgUser.first_name) {
+                        rayData.username = tgUser.first_name;
+                    }
+                }
+            }
+            headerUsername.innerText = rayData.username;
+            profileUser.innerText = rayData.username;
+            headerWallet.innerText = rayData.wallet.substring(0, 6) + '... ' + '⌄';
+            profileWallet.innerText = rayData.wallet;
+        }
 
         function updateDisplay() {
             balanceDisplay.innerText = rayData.balance.toFixed(10);
             energyText.innerText = `${Math.floor(rayData.energy)} / ${rayData.maxEnergy}`;
             const percent = (rayData.energy / rayData.maxEnergy) * 100;
             energyFill.style.width = percent + '%';
+            profileSpeed.innerText = rayData.speed.toFixed(10) + '/с';
         }
 
         function showPopup(text) {
@@ -401,6 +501,7 @@
 
             document.getElementById('screen-' + tabName).classList.add('active');
             element.classList.add('active');
+            updateDisplay();
         }
 
         function loadRayData() {
@@ -412,6 +513,9 @@
                             rayData.balance = parsed.balance ?? 0.0000000000;
                             rayData.speed = parsed.speed ?? 0.0000000001;
                             rayData.energy = parsed.energy ?? 500;
+                            rayData.boosted = parsed.boosted ?? false;
+                            if (parsed.wallet) rayData.wallet = parsed.wallet;
+                            if (parsed.username) rayData.username = parsed.username;
 
                             if (parsed.lastTime) {
                                 const secondsPassed = (Date.now() - parsed.lastTime) / 1000;
@@ -419,6 +523,7 @@
                                     rayData.balance += secondsPassed * rayData.speed;
                                 }
                             }
+                            initTelegramUser();
                             updateDisplay();
                         } catch (e) {
                             fallbackLoad();
@@ -438,10 +543,14 @@
                 try {
                     const parsed = JSON.parse(local);
                     rayData.balance = parsed.balance ?? rayData.balance;
+                    rayData.speed = parsed.speed ?? rayData.speed;
                     rayData.energy = parsed.energy ?? rayData.energy;
-                    updateDisplay();
+                    rayData.boosted = parsed.boosted ?? false;
+                    if (parsed.wallet) rayData.wallet = parsed.wallet;
                 } catch (e) {}
             }
+            initTelegramUser();
+            updateDisplay();
         }
 
         function saveRayData(showMsg = true) {
@@ -470,4 +579,53 @@
                 rayData.energy = Math.min(rayData.maxEnergy, rayData.energy + 1);
             }
             updateDisplay();
-        }, 1000
+        }, 1000);
+
+        // Автозбереження кожні 15 секунд
+        setInterval(() => {
+            saveRayData(false);
+        }, 15000);
+
+        // Клік по монеті
+        coinButton.addEventListener('click', () => {
+            if (rayData.energy >= 1) {
+                rayData.balance += 0.0000000005;
+                rayData.energy -= 1;
+                updateDisplay();
+            }
+        });
+
+        // Покупка буста
+        buyBoostBtn.addEventListener('click', () => {
+            if (!rayData.boosted) {
+                rayData.speed *= 2;
+                rayData.boosted = true;
+                buyBoostBtn.innerText = "Активно";
+                buyBoostBtn.style.background = "#0d9488";
+                showPopup("Турбо-режим успішно активовано! Швидкість подвоєно.");
+                updateDisplay();
+                saveRayData(false);
+            } else {
+                showPopup("Турбо-режим вже активовано!");
+            }
+        });
+
+        // Кнопка збереження прогресу
+        saveBtn.addEventListener('click', () => {
+            saveRayData(true);
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            }
+            loadRayData();
+        });
+
+        window.addEventListener('beforeunload', () => {
+            saveRayData(false);
+        });
+    </script>
+</body>
+</html>
