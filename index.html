@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAY Token | TON Network</title>
-    <!-- Офіційна бібліотека TON Connect UI для підключення гаманців -->
+    <!-- Офіційна бібліотека TON Connect UI -->
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         * {
@@ -20,34 +20,98 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
             position: relative;
+            padding: 20px 0;
         }
-        /* Контейнер для кнопки гаманця у правому верхньому кутку */
+
+        /* Анімація неонового переливання (пульсації кольору) */
+        @keyframes neonPulse {
+            0% {
+                border-color: #00d2ff;
+                box-shadow: 0 0 10px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.2);
+            }
+            50% {
+                border-color: #9d00ff;
+                box-shadow: 0 0 25px rgba(157, 0, 255, 0.6), inset 0 0 15px rgba(157, 0, 255, 0.3);
+            }
+            100% {
+                border-color: #00d2ff;
+                box-shadow: 0 0 10px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.2);
+            }
+        }
+
+        @keyframes btnNeonGlow {
+            0% {
+                background: linear-gradient(135deg, #0088cc, #00d2ff);
+                box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+            }
+            50% {
+                background: linear-gradient(135deg, #7928ca, #ff007f);
+                box-shadow: 0 4px 25px rgba(255, 0, 127, 0.6);
+            }
+            100% {
+                background: linear-gradient(135deg, #0088cc, #00d2ff);
+                box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+            }
+        }
+
+        /* Кнопка гаманця угорі праворуч */
         #ton-connect {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
         }
+
+        /* Міні-плеєр фонової музики угорі ліворуч */
+        .music-player {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+            background: rgba(18, 24, 38, 0.85);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: neonPulse 4s infinite;
+        }
+        .music-player button {
+            background: none;
+            border: none;
+            color: #00d2ff;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .music-player span {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
         .container {
             text-align: center;
             background: rgba(18, 24, 38, 0.85);
-            padding: 40px 30px;
+            padding: 30px 20px;
             border-radius: 20px;
-            border: 1px solid rgba(0, 210, 255, 0.2);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 210, 255, 0.1);
+            border: 2px solid #00d2ff;
+            animation: neonPulse 5s infinite;
             max-width: 380px;
             width: 90%;
+            margin-top: 40px;
         }
         .logo-container {
             position: relative;
-            width: 180px;
-            height: 180px;
-            margin: 0 auto 25px auto;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 15px auto;
             border-radius: 15px;
             overflow: hidden;
             border: 2px solid #00d2ff;
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+            animation: neonPulse 3s infinite;
         }
         .logo-container img {
             width: 100%;
@@ -55,38 +119,76 @@
             object-fit: cover;
         }
         h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
+            font-size: 24px;
+            margin-bottom: 8px;
             letter-spacing: 1px;
             color: #00d2ff;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
         }
         p {
-            font-size: 14px;
+            font-size: 13px;
             color: #94a3b8;
-            margin-bottom: 25px;
-            line-height: 1.5;
+            margin-bottom: 20px;
+            line-height: 1.4;
         }
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #0088cc, #00d2ff);
+            animation: btnNeonGlow 6s infinite;
             color: #ffffff;
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: 10px 25px;
+            font-size: 15px;
             font-weight: 600;
             text-decoration: none;
             border-radius: 30px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
         }
         .btn:hover {
+            transform: scale(1.05);
+        }
+        /* Блок із трьома неоновими квадратиками */
+        .nav-boxes {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            border-top: 1px solid rgba(0, 210, 255, 0.2);
+            padding-top: 18px;
+        }
+        .nav-box {
+            flex: 1;
+            background: rgba(11, 15, 25, 0.6);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 12px;
+            padding: 12px 5px;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            animation: neonPulse 4s infinite;
+        }
+        .nav-box:hover {
+            background: rgba(0, 210, 255, 0.25);
+            border-color: #ff007f;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 210, 255, 0.6);
         }
     </style>
 </head>
 <body>
 
-    <!-- Кнопка підключення гаманця -->
+    <!-- Плеєр фонової музики -->
+    <div class="music-player">
+        <button id="audio-btn" onclick="toggleAudio()">▶ Музика</button>
+        <span>Тихо</span>
+    </div>
+    <!-- Аудіо файл (можете замінити посилання у src на своє) -->
+    <audio id="bg-music" loop>
+        <source src="https://actions.google.com/sounds/v1/ambiences/space_ambient.ogg" type="audio/ogg">
+    </audio>
+
+    <!-- Кнопка гаманця -->
     <div id="ton-connect"></div>
 
     <div class="container">
@@ -95,15 +197,38 @@
         </div>
         <h1>RAY TOKEN</h1>
         <p>Офіційний токен проєкту в мережі TON. Швидкий, децентралізований та створений для майбутнього.</p>
+        
         <a href="https://app.ston.fi/swap?ft=TON&tt=EQA_i0MM2zcBtmdJIlnroEIF7blopaJ7s7Jx95z2rvgRr3Y_" target="_blank" class="btn">Купити на STON.fi</a>
+
+        <!-- Три неонові квадратики знизу -->
+        <div class="nav-boxes">
+            <a href="1.html" class="nav-box">⛏️ Майнінг</a>
+            <a href="3.html" class="nav-box">💬 Чат</a>
+            <a href="3.html" class="nav-box">🎮 Ігри</a>
+        </div>
     </div>
 
     <script>
-        // Ініціалізація віджета TON Connect
+        // Ініціалізація TON Connect
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://gansgajder-web.github.io/RAY/tonconnect-manifest.json',
             buttonRootId: 'ton-connect'
         });
+
+        // Керування фоновою музикою
+        const music = document.getElementById('bg-music');
+        const audioBtn = document.getElementById('audio-btn');
+        music.volume = 0.2; // Встановлюємо дуже тиху фонову гучність (20%)
+
+        function toggleAudio() {
+            if (music.paused) {
+                music.play();
+                audioBtn.textContent = '❚❚ Пауза';
+            } else {
+                music.pause();
+                audioBtn.textContent = '▶ Музика';
+            }
+        }
     </script>
 
 </body>
