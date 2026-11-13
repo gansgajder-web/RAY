@@ -447,6 +447,7 @@
         let regDate = new Date().toLocaleDateString('uk-UA');
         let saveTimeout = null;
         let currentTab = 'mine';
+        let isDataLoaded = false; // Захист від перезапису нулями під час завантаження
 
         const balanceEl = document.getElementById('balance');
         const energyTextEl = document.getElementById('energy-text');
@@ -533,16 +534,19 @@
                             tap_power: 0.0000000001
                         }]);
                 }
+                isDataLoaded = true;
                 updateUI();
                 updateProfileUI();
                 syncStatusEl.textContent = 'Збережено в хмарі ✓';
             } catch (err) {
                 console.error(err);
+                isDataLoaded = true;
                 syncStatusEl.textContent = 'Готово до праці ✓';
             }
         }
 
         function saveImmediately() {
+            if (!isDataLoaded) return; // Не зберігаємо доки дані не підтягнулися з хмари
             syncStatusEl.textContent = 'Збереження...';
             supabaseClient
                 .from('ray_mining')
@@ -619,13 +623,16 @@
                 updateUI();
                 updateProfileUI();
                 saveImmediately();
+                
+                // ЗАЛИШАЄМОСЯ НА ВКЛАДЦІ МАЙНІНГУ ПІСЛЯ УСПІШНОЇ ОПЛАТИ
+                switchTab('mine');
             } catch (e) {
                 statusEl.textContent = '❌ Оплату скасовано';
             }
         }
 
         coinEl.addEventListener('pointerdown', (e) => {
-            if (energy <= 0) return;
+            if (!isDataLoaded || energy <= 0) return;
 
             balance += tapReward;
             energy -= 1;
