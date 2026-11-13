@@ -154,42 +154,23 @@
         p {
             font-size: 13px;
             color: #94a3b8;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
             line-height: 1.4;
         }
         .btn {
             display: inline-block;
             animation: btnNeonGlow 6s infinite;
             color: #ffffff;
-            padding: 10px 25px;
+            padding: 11px 30px;
             font-size: 15px;
             font-weight: 600;
             text-decoration: none;
             border-radius: 30px;
             transition: transform 0.3s ease;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
         .btn:hover {
             transform: scale(1.05);
-        }
-        
-        /* Кнопка керування музикою */
-        .music-btn {
-            display: inline-block;
-            background: rgba(18, 24, 38, 0.9);
-            border: 1px solid #00d2ff;
-            color: #00d2ff;
-            padding: 8px 20px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 20px;
-            cursor: pointer;
-            margin-bottom: 15px;
-            animation: neonPulse 4s infinite;
-            transition: all 0.3s ease;
-        }
-        .music-btn:hover {
-            background: rgba(0, 210, 255, 0.2);
         }
 
         .nav-boxes {
@@ -223,11 +204,6 @@
 </head>
 <body>
 
-    <!-- Аудіо файл (можете замінити посилання на свій власний MP3-файл у репозиторії) -->
-    <audio id="bg-music" loop>
-        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=cyberpunk-2099-107016.mp3" type="audio/mpeg">
-    </audio>
-
     <!-- Верхня панель: Нік зліва, Гаманець справа -->
     <div class="top-bar">
         <div class="tg-profile">
@@ -250,10 +226,6 @@
         <h1>RAY TOKEN</h1>
         <p>Офіційний токен проєкту в мережі TON. Швидкий, децентралізований та створений для майбутнього.</p>
         
-        <!-- Кнопка музики всередині картки -->
-        <button id="audio-toggle-btn" class="music-btn" onclick="toggleMusic()">▶ Увімкнути музику</button>
-        <br>
-
         <a href="https://app.ston.fi/swap?ft=TON&tt=EQA_i0MM2zcBtmdJIlnroEIF7blopaJ7s7Jx95z2rvgRr3Y_" target="_blank" class="btn">Купити на STON.fi</a>
 
         <div class="nav-boxes">
@@ -284,24 +256,6 @@
             manifestUrl: 'https://gansgajder-web.github.io/RAY/tonconnect-manifest.json',
             buttonRootId: 'ton-connect'
         });
-
-        // Керування реальним аудіотреком
-        const music = document.getElementById('bg-music');
-        const audioBtn = document.getElementById('audio-toggle-btn');
-        music.volume = 0.4; // Встановлюємо комфортну гучність (40%)
-
-        function toggleMusic() {
-            if (music.paused) {
-                music.play().then(() => {
-                    audioBtn.textContent = '❚❚ Вимкнути музику';
-                }).catch(e => {
-                    console.log("Автозапуск заблоковано браузером", e);
-                });
-            } else {
-                music.pause();
-                audioBtn.textContent = '▶ Увімкнути музику';
-            }
-        }
 
         // GeckoTerminal API для курсу
         const POOL_ADDRESS = 'EQAwkja00aUNZX1bYH4_MlxLvQoH4-JRtfBXqSe4FEKhfwjY';
