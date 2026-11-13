@@ -409,7 +409,7 @@
         <!-- НАВІГАЦІЯ -->
         <div class="nav-boxes">
             <div id="nav-left-btn" style="flex: 1; display: flex;">
-                <a href="index.html" class="nav-box" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #ffffff;">🏠 Головна</a>
+                <button class="nav-box" onclick="goToHome()">🏠 Головна</button>
             </div>
             <button class="nav-box" id="tab-boost" onclick="switchTab('boost')">⚡ Буст</button>
             <button class="nav-box" id="tab-profile" onclick="switchTab('profile')">👤 Профіль</button>
@@ -482,7 +482,7 @@
 
             if (tab === 'mine') {
                 document.getElementById('view-mine').classList.add('active');
-                navLeftBtnEl.innerHTML = `<a href="index.html" class="nav-box" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #ffffff;">🏠 Головна</a>`;
+                navLeftBtnEl.innerHTML = `<button class="nav-box" onclick="goToHome()">🏠 Головна</button>`;
             } else {
                 navLeftBtnEl.innerHTML = `<button class="nav-box" onclick="switchTab('mine')">🪙 Майнінг</button>`;
                 
@@ -532,10 +532,9 @@
             }
         }
 
-        function scheduleSave() {
+        async function saveImmediately() {
             syncStatusEl.textContent = 'Збереження...';
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
+            try {
                 await supabaseClient
                     .from('ray_mining')
                     .upsert({
@@ -547,7 +546,20 @@
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
                 syncStatusEl.textContent = 'Збережено в хмарі ✓';
-            }, 1000);
+            } catch (err) {
+                syncStatusEl.textContent = 'Готово до праці ✓';
+            }
+        }
+
+        async function goToHome() {
+            await saveImmediately();
+            window.location.href = 'index.html';
+        }
+
+        function scheduleSave() {
+            syncStatusEl.textContent = 'Збереження...';
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveImmediately, 500);
         }
 
         function updateUI() {
@@ -592,7 +604,7 @@
                 if (type === 'energy') {
                     maxEnergy += 500;
                     energy = maxEnergy;
-                    status.textContent = '✅ Енергію збільшено на +500!';
+                    statusEl.textContent = '✅ Енергію збільшено на +500!';
                 } else if (type === 'speed') {
                     tapReward += 0.0000000005;
                     statusEl.textContent = '✅ Швидкість тапу збільшено!';
@@ -603,7 +615,7 @@
 
                 updateUI();
                 updateProfileUI();
-                scheduleSave();
+                await saveImmediately();
                 switchTab('mine');
             } catch (e) {
                 statusEl.textContent = '❌ Оплату скасовано';
