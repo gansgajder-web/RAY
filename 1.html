@@ -406,9 +406,11 @@
             </div>
         </div>
 
-        <!-- НАВІГАЦІЯ -->
+        <!-- НАВІГАЦІЯ (Кнопки внизу динамічно змінюються) -->
         <div class="nav-boxes">
-            <button class="nav-box active-tab" id="tab-mine" onclick="switchTab('mine')">🪙 Майнінг</button>
+            <div id="nav-left-btn">
+                <a href="index.html" class="nav-box" style="display: block; text-align: center; line-height: normal;">🏠 Головна</a>
+            </div>
             <button class="nav-box" id="tab-boost" onclick="switchTab('boost')">⚡ Буст</button>
             <button class="nav-box" id="tab-profile" onclick="switchTab('profile')">👤 Профіль</button>
         </div>
@@ -452,6 +454,7 @@
         const energyFillEl = document.getElementById('energy-fill');
         const syncStatusEl = document.getElementById('sync-status');
         const coinEl = document.getElementById('tap-coin');
+        const navLeftBtnEl = document.getElementById('nav-left-btn');
 
         let audioCtx = null;
         function playClickSound() {
@@ -479,14 +482,20 @@
 
             if (tab === 'mine') {
                 document.getElementById('view-mine').classList.add('active');
-                document.getElementById('tab-mine').classList.add('active-tab');
-            } else if (tab === 'boost') {
-                document.getElementById('view-boost').classList.add('active');
-                document.getElementById('tab-boost').classList.add('active-tab');
-            } else if (tab === 'profile') {
-                updateProfileUI();
-                document.getElementById('view-profile').classList.add('active');
-                document.getElementById('tab-profile').classList.add('active-tab');
+                // На головній майнінгу ліва кнопка веде на index.html (Головна)
+                navLeftBtnEl.innerHTML = `<a href="index.html" class="nav-box" style="display: block; text-align: center; text-decoration: none; color: #ffffff; padding: 11px 4px; box-sizing: border-box;">🏠 Головна</a>`;
+            } else {
+                // На бусті та профілі ліва кнопка повертає на вкладку майнінгу
+                navLeftBtnEl.innerHTML = `<button class="nav-box" onclick="switchTab('mine')">🪙 Майнінг</button>`;
+                
+                if (tab === 'boost') {
+                    document.getElementById('view-boost').classList.add('active');
+                    document.getElementById('tab-boost').classList.add('active-tab');
+                } else if (tab === 'profile') {
+                    updateProfileUI();
+                    document.getElementById('view-profile').classList.add('active');
+                    document.getElementById('tab-profile').classList.add('active-tab');
+                }
             }
         }
 
