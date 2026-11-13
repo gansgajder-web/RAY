@@ -19,57 +19,51 @@
             flex-direction: column;
             min-height: 100vh;
             justify-content: space-between;
-            padding: 16px;
+            padding: 12px;
         }
-        .app-header {
+        .top-app-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 16px;
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             padding: 0 4px;
             color: #e5e7eb;
         }
-        .user-bar {
+        .user-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-            gap: 8px;
+            margin-bottom: 14px;
         }
         .user-tag {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            border-radius: 20px;
-            padding: 6px 12px 6px 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(147, 51, 234, 0.35);
+            border-radius: 24px;
+            padding: 4px 12px 4px 4px;
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 13px;
         }
         .avatar-ph {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: #4a1d96;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 13px;
         }
         .wallet-badge {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.3);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(147, 51, 234, 0.35);
             border-radius: 20px;
-            padding: 8px 12px;
-            font-size: 12px;
-            color: #34d399;
-            font-weight: 500;
-            max-width: 160px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: #d1d5db;
         }
         .screen-content {
             display: none;
@@ -81,45 +75,42 @@
             display: flex;
         }
         .main-card {
-            background: linear-gradient(145deg, #12101f, #1b162c);
-            border: 1px solid rgba(147, 51, 234, 0.4);
+            background: linear-gradient(160deg, #13101f, #1b162c);
+            border: 1px solid rgba(52, 211, 153, 0.4);
             border-radius: 24px;
-            padding: 24px 16px;
+            padding: 20px 16px;
             text-align: center;
-            box-shadow: 0 0 35px rgba(147, 51, 234, 0.15);
+            box-shadow: 0 0 30px rgba(52, 211, 153, 0.1);
         }
         .mining-title {
             font-size: 11px;
             color: #9ca3af;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             margin-bottom: 8px;
-        }
-        .speed-sub {
-            font-size: 12px;
-            color: #34d399;
-            margin-bottom: 16px;
         }
         .balance-amount {
             font-size: 26px;
             font-weight: bold;
             color: #34d399;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             text-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
             word-break: break-all;
+            font-family: monospace;
         }
         .coin-container {
             position: relative;
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 20px auto;
-            background: radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, rgba(18, 16, 31, 0) 70%);
+            width: 130px;
+            height: 130px;
+            margin: 0 auto 16px auto;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.3) 0%, rgba(18, 16, 31, 0) 70%);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            border: 2px solid rgba(147, 51, 234, 0.6);
-            box-shadow: 0 0 30px rgba(147, 51, 234, 0.35);
+            border: 2px solid rgba(147, 51, 234, 0.7);
+            box-shadow: 0 0 25px rgba(147, 51, 234, 0.4);
             cursor: pointer;
             user-select: none;
             transition: transform 0.1s ease;
@@ -127,10 +118,52 @@
         .coin-container:active {
             transform: scale(0.94);
         }
-        .coin-inner-icon {
-            font-size: 40px;
-            color: #fff;
+        .coin-arrow {
+            font-size: 32px;
+            color: #ffffff;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .coin-text {
+            font-size: 14px;
+            color: #38bdf8;
             font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .energy-section {
+            margin-bottom: 14px;
+            text-align: left;
+            padding: 0 6px;
+        }
+        .energy-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 6px;
+        }
+        .energy-header span:last-child {
+            color: #fff;
+            font-weight: 500;
+        }
+        .energy-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .energy-bar-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #9333ea, #34d399);
+            border-radius: 4px;
+        }
+        .cloud-status {
+            font-size: 12px;
+            color: #34d399;
+            margin-bottom: 14px;
+            font-weight: 500;
         }
         .save-btn {
             background: linear-gradient(135deg, #0d9488, #0f766e);
@@ -155,65 +188,18 @@
             background: linear-gradient(145deg, #12101f, #1b162c);
             border: 1px solid rgba(147, 51, 234, 0.4);
             border-radius: 24px;
-            padding: 20px;
-            text-align: left;
-        }
-        .section-title {
-            font-size: 17px;
-            font-weight: bold;
-            color: #fff;
-            margin-bottom: 12px;
+            padding: 24px;
             text-align: center;
         }
-        .profile-info-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .profile-info-row:last-child {
-            border-bottom: none;
-        }
-        .profile-label {
-            color: #9ca3af;
-        }
-        .profile-val {
-            color: #fff;
-            font-weight: 500;
-            text-align: right;
-            max-width: 190px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .boost-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(147, 51, 234, 0.2);
-            border-radius: 16px;
-            padding: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-        }
-        .boost-info h4 {
-            font-size: 14px;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-        .boost-info p {
-            font-size: 12px;
-            color: #9ca3af;
-        }
-        .boost-btn {
-            background: #9333ea;
-            color: #fff;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 13px;
+        .section-title {
+            font-size: 18px;
             font-weight: bold;
-            cursor: pointer;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .section-desc {
+            font-size: 14px;
+            color: #9ca3af;
         }
         .nav-bar {
             display: flex;
@@ -222,7 +208,7 @@
             border: 1px solid rgba(147, 51, 234, 0.3);
             padding: 10px 0;
             border-radius: 16px;
-            margin-top: 16px;
+            margin-top: 14px;
         }
         .nav-item {
             display: flex;
@@ -293,30 +279,42 @@
 </head>
 <body>
 
-    <div class="app-header">
+    <div class="top-app-bar">
         <span>✕</span>
         <span>RAY</span>
         <span>⌄ ⋮</span>
     </div>
 
-    <div class="user-bar">
+    <div class="user-row">
         <div class="user-tag">
             <div class="avatar-ph">👑</div>
-            <span id="headerUsername">@Leslav</span>
+            <span>@Leslav</span>
         </div>
-        <div class="wallet-badge" id="headerWallet">UQDX...RtWw</div>
+        <div class="wallet-badge">UQDX...RtWw ⌄</div>
     </div>
 
-    <!-- Вкладка 1: Головна -->
+    <!-- Головна вкладка -->
     <div class="screen-content active" id="screen-home">
         <div class="main-card">
             <div class="mining-title">НАМАЙНЕНО RAY</div>
-            <div class="speed-sub" id="speedSub">Швидкість: +0.0000000001/с</div>
-            <div class="balance-amount" id="balanceDisplay">0.0000000021</div>
+            <div class="balance-amount" id="balanceDisplay">0.0000000000</div>
             
             <div class="coin-container" id="coinButton">
-                <div class="coin-inner-icon">▲</div>
+                <div class="coin-arrow">▲</div>
+                <div class="coin-text">RAY</div>
             </div>
+
+            <div class="energy-section">
+                <div class="energy-header">
+                    <span>⚡ Енергія</span>
+                    <span id="energyText">500 / 500</span>
+                </div>
+                <div class="energy-bar-bg">
+                    <div class="energy-bar-fill" id="energyFill"></div>
+                </div>
+            </div>
+
+            <div class="cloud-status">Збережено в хмарі ✓</div>
 
             <button class="save-btn" id="saveBtn">
                 <span>💾</span> Зберегти прогрес
@@ -324,47 +322,26 @@
         </div>
     </div>
 
-    <!-- Вкладка 2: Буст -->
+    <!-- Вкладка Буст -->
     <div class="screen-content" id="screen-boost">
         <div class="section-card">
-            <div class="section-title">Прискорювач майнінгу</div>
-            <div class="boost-item">
-                <div class="boost-info">
-                    <h4>Турбо-режим x2</h4>
-                    <p>Подвоює швидкість майнінгу</p>
-                </div>
-                <button class="boost-btn" id="boostBtn">Купити</button>
-            </div>
+            <div class="section-title">Буст майнінгу</div>
+            <div class="section-desc">Скоро з'явиться можливість покращення швидкості.</div>
         </div>
     </div>
 
-    <!-- Вкладка 3: Профіль -->
+    <!-- Вкладка Профіль -->
     <div class="screen-content" id="screen-profile">
         <div class="section-card">
             <div class="section-title">Профіль користувача</div>
-            <div class="profile-info-row">
-                <span class="profile-label">Акаунт Telegram:</span>
-                <span class="profile-val" id="profileUser">@Leslav</span>
-            </div>
-            <div class="profile-info-row">
-                <span class="profile-label">Гаманець (TON):</span>
-                <span class="profile-val" id="profileWallet">UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw</span>
-            </div>
-            <div class="profile-info-row">
-                <span class="profile-label">Баланс RAY:</span>
-                <span class="profile-val" id="profileBalance">0.0000000021</span>
-            </div>
-            <div class="profile-info-row">
-                <span class="profile-label">Статус:</span>
-                <span class="profile-val" style="color: #f39c12;">Засновник 👑</span>
-            </div>
+            <div class="section-desc">@Leslav<br>Гаманець: UQDX...RtWw</div>
         </div>
     </div>
 
-    <!-- Навігація -->
+    <!-- Навігація внизу -->
     <div class="nav-bar">
         <button class="nav-item active" onclick="switchTab('home', this)">
-            <span>🔥</span>Головна
+            <span>🏠</span>Головна
         </button>
         <button class="nav-item" onclick="switchTab('boost', this)">
             <span>⚡</span>Буст
@@ -385,29 +362,28 @@
 
     <script>
         let rayData = {
-            balance: 0.0000000021,
+            balance: 0.0000000000,
             speed: 0.0000000001,
-            username: "@Leslav",
-            wallet: "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw",
+            energy: 500,
+            maxEnergy: 500,
             lastTime: Date.now()
         };
 
         const balanceDisplay = document.getElementById('balanceDisplay');
-        const profileBalance = document.getElementById('profileBalance');
-        const speedSub = document.getElementById('speedSub');
         const coinButton = document.getElementById('coinButton');
         const saveBtn = document.getElementById('saveBtn');
-        const boostBtn = document.getElementById('boostBtn');
+        const energyText = document.getElementById('energyText');
+        const energyFill = document.getElementById('energyFill');
         
         const modalOverlay = document.getElementById('modalOverlay');
         const modalText = document.getElementById('modalText');
         const modalClose = document.getElementById('modalClose');
 
         function updateDisplay() {
-            const formatted = rayData.balance.toFixed(10);
-            balanceDisplay.innerText = formatted;
-            profileBalance.innerText = formatted;
-            speedSub.innerText = 'Швидкість: +' + rayData.speed.toFixed(10) + '/с';
+            balanceDisplay.innerText = rayData.balance.toFixed(10);
+            energyText.innerText = `${Math.floor(rayData.energy)} / ${rayData.maxEnergy}`;
+            const percent = (rayData.energy / rayData.maxEnergy) * 100;
+            energyFill.style.width = percent + '%';
         }
 
         function showPopup(text) {
@@ -425,7 +401,6 @@
 
             document.getElementById('screen-' + tabName).classList.add('active');
             element.classList.add('active');
-            updateDisplay();
         }
 
         function loadRayData() {
@@ -434,10 +409,9 @@
                     if (!err && value) {
                         try {
                             const parsed = JSON.parse(value);
-                            rayData.balance = parsed.balance ?? 0.0000000021;
+                            rayData.balance = parsed.balance ?? 0.0000000000;
                             rayData.speed = parsed.speed ?? 0.0000000001;
-                            rayData.username = parsed.username ?? "@Leslav";
-                            rayData.wallet = parsed.wallet ?? "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw";
+                            rayData.energy = parsed.energy ?? 500;
 
                             if (parsed.lastTime) {
                                 const secondsPassed = (Date.now() - parsed.lastTime) / 1000;
@@ -464,7 +438,7 @@
                 try {
                     const parsed = JSON.parse(local);
                     rayData.balance = parsed.balance ?? rayData.balance;
-                    rayData.speed = parsed.speed ?? rayData.speed;
+                    rayData.energy = parsed.energy ?? rayData.energy;
                     updateDisplay();
                 } catch (e) {}
             }
@@ -489,47 +463,11 @@
             }
         }
 
-        // Пасивний майнінг щосекунди
+        // Пасивний майнінг та відновлення енергії
         setInterval(() => {
             rayData.balance += rayData.speed;
-            updateDisplay();
-        }, 1000);
-
-        // Автозбереження кожні 15 секунд
-        setInterval(() => {
-            saveRayData(false);
-        }, 15000);
-
-        // Клік по монеті
-        coinButton.addEventListener('click', () => {
-            rayData.balance += 0.0000000005;
-            updateDisplay();
-        });
-
-        // Кнопка буста
-        boostBtn.addEventListener('click', () => {
-            rayData.speed *= 2;
-            showPopup("Буст успішно активовано! Швидкість подвоєно.");
-            updateDisplay();
-            saveRayData(false);
-        });
-
-        // Кнопка збереження
-        saveBtn.addEventListener('click', () => {
-            saveRayData(true);
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.ready();
-                window.Telegram.WebApp.expand();
+            if (rayData.energy < rayData.maxEnergy) {
+                rayData.energy = Math.min(rayData.maxEnergy, rayData.energy + 1);
             }
-            loadRayData();
-        });
-
-        window.addEventListener('beforeunload', () => {
-            saveRayData(false);
-        });
-    </script>
-</body>
-</html>
+            updateDisplay();
+        }, 1000
