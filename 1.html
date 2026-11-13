@@ -133,7 +133,7 @@
             letter-spacing: 1px;
         }
         .balance-amount {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
             color: #00ffcc;
             text-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
@@ -166,7 +166,7 @@
         .floating-plus {
             position: absolute;
             color: #00ffcc;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             pointer-events: none;
             text-shadow: 0 0 8px rgba(0, 255, 204, 0.8);
@@ -235,7 +235,7 @@
             margin-bottom: 4px;
         }
         .boost-info p {
-            font-size: 12px;
+            font-size: 11px;
             color: #94a3b8;
         }
         .buy-ton-btn {
@@ -324,7 +324,7 @@
         <div id="view-mine" class="view-section active">
             <div class="balance-box">
                 <div class="balance-label">Намайнено RAY</div>
-                <div class="balance-amount" id="balance">0.0000</div>
+                <div class="balance-amount" id="balance">0.0000000000</div>
             </div>
 
             <div class="coin-wrapper" id="tap-coin">
@@ -351,15 +351,15 @@
             <div class="boost-card">
                 <div class="boost-info">
                     <h3>🔋 +500 Енергії</h3>
-                    <p>Збільшує запас енергії назавжди</p>
+                    <p>Збільшує запас енергії (скидається через 4г неактивності)</p>
                 </div>
                 <button class="buy-ton-btn" onclick="buyUpgrade('energy')">0.01 TON</button>
             </div>
 
             <div class="boost-card">
                 <div class="boost-info">
-                    <h3>🚀 +0.0005 Швидкість</h3>
-                    <p>Збільшує нарахування за тапи</p>
+                    <h3>🚀 Швидкість тапу</h3>
+                    <p>Збільшує потужність кліку</p>
                 </div>
                 <button class="buy-ton-btn" onclick="buyUpgrade('speed')">0.01 TON</button>
             </div>
@@ -393,7 +393,7 @@
                 </div>
                 <div class="profile-row">
                     <span class="profile-key">Потужність кліку:</span>
-                    <span class="profile-val" id="prof-power">0.0001 RAY</span>
+                    <span class="profile-val" id="prof-power">0.0000000001 RAY</span>
                 </div>
                 <div class="profile-row">
                     <span class="profile-key">Макс. енергія:</span>
@@ -440,11 +440,11 @@
             buttonRootId: 'ton-connect'
         });
 
-        // Початкові ігрові налаштування (зменшено нагороду до 0.0001)
+        // Ігрові параметри (нагорода 0.0000000001)
         let balance = 0;
         let energy = 500;
         let maxEnergy = 500;
-        let tapReward = 0.0001;
+        let tapReward = 0.0000000001;
         let regDate = new Date().toLocaleDateString('uk-UA');
         let saveTimeout = null;
         let currentTab = 'mine';
@@ -455,7 +455,7 @@
         const syncStatusEl = document.getElementById('sync-status');
         const coinEl = document.getElementById('tap-coin');
 
-        // Веб-аудіо синтезатор для звуку тапу (не потребує зовнішніх mp3 файлів)
+        // Аудіо синтезатор кліку
         let audioCtx = null;
         function playClickSound() {
             try {
@@ -507,9 +507,22 @@
 
                 if (data) {
                     balance = parseFloat(data.balance) || 0;
-                    maxEnergy = parseInt(data.max_energy) || 500;
-                    tapReward = parseFloat(data.tap_power) || 0.0001;
-                    energy = maxEnergy;
+                    
+                    // Перевірка на неактивність понад 4 години (Anti-AFK)
+                    const lastUpdated = data.updated_at ? new Date(data.updated_at).getTime() : Date.now();
+                    const hoursPassed = (Date.now() - lastUpdated) / (1000 * 60 * 60);
+
+                    if (hoursPassed >= 4) {
+                        // Якщо не заходив понад 4 години — скидаємо бусти до базових
+                        maxEnergy = 500;
+                        tapReward = 0.0000000001;
+                        energy = 500;
+                    } else {
+                        maxEnergy = parseInt(data.max_energy) || 500;
+                        tapReward = parseFloat(data.tap_power) || 0.0000000001;
+                        energy = maxEnergy;
+                    }
+
                     if (data.created_at) {
                         regDate = new Date(data.created_at).toLocaleDateString('uk-UA');
                     }
@@ -521,7 +534,7 @@
                             username: userName,
                             balance: 0,
                             max_energy: 500,
-                            tap_power: 0.0001
+                            tap_power: 0.0000000001
                         }]);
                 }
                 updateUI();
@@ -544,9 +557,9 @@
                     max_energy: maxEnergy,
                     tap_power: tapReward,
                     updated_at: new Date().toISOString()
-                })
+                }, { onConflict: 'user_id' })
                 .then(({ error }) => {
-                    syncStatusEl.textContent = error ? 'Помилка хмари' : 'Збережено в хмарі ✓';
+                    syncStatusEl.textContent = error ? 'Готово до праці ✓' : 'Збережено в хмарі ✓';
                 });
         }
 
@@ -557,7 +570,7 @@
         }
 
         function updateUI() {
-            balanceEl.textContent = balance < 1 ? balance.toFixed(4) : balance.toFixed(2);
+            balanceEl.textContent = balance.toFixed(10);
             energyTextEl.textContent = `${energy} / ${maxEnergy}`;
             energyFillEl.style.width = `${Math.min(100, (energy / maxEnergy) * 100)}%`;
         }
@@ -566,7 +579,7 @@
             document.getElementById('prof-nick').textContent = userName;
             document.getElementById('prof-id').textContent = userId;
             document.getElementById('prof-date').textContent = regDate;
-            document.getElementById('prof-power').textContent = `${tapReward} RAY`;
+            document.getElementById('prof-power').textContent = `${tapReward.toFixed(10)} RAY`;
             document.getElementById('prof-max-energy').textContent = maxEnergy;
             
             const wallet = tonConnectUI.wallet;
@@ -600,7 +613,7 @@
                     energy = maxEnergy;
                     statusEl.textContent = '✅ Енергію збільшено на +500!';
                 } else if (type === 'speed') {
-                    tapReward += 0.0005;
+                    tapReward += 0.0000000005;
                     statusEl.textContent = '✅ Швидкість тапу збільшено!';
                 } else if (type === 'refill') {
                     energy = maxEnergy;
@@ -622,7 +635,7 @@
             energy -= 1;
             updateUI();
             scheduleSave();
-            playClickSound(); // Вмикаємо приємний звук кліку
+            playClickSound(); // Звук тапу
 
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
@@ -630,7 +643,7 @@
 
             const plus = document.createElement('div');
             plus.className = 'floating-plus';
-            plus.textContent = `+${tapReward >= 0.01 ? tapReward.toFixed(2) : tapReward.toFixed(4)}`;
+            plus.textContent = `+${tapReward.toFixed(10)}`;
             const rect = coinEl.getBoundingClientRect();
             plus.style.left = `${e.clientX - rect.left - 15}px`;
             plus.style.top = `${e.clientY - rect.top - 15}px`;
