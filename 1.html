@@ -25,22 +25,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             margin-bottom: 12px;
             padding: 0 4px;
+            color: #e5e7eb;
         }
         .user-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            gap: 8px;
         }
         .user-tag {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(147, 51, 234, 0.3);
             border-radius: 20px;
-            padding: 5px 12px 5px 5px;
+            padding: 6px 12px 6px 6px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -60,9 +62,14 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(147, 51, 234, 0.3);
             border-radius: 20px;
-            padding: 6px 12px;
-            font-size: 13px;
-            color: #ccc;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #34d399;
+            font-weight: 500;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .screen-content {
             display: none;
@@ -79,7 +86,6 @@
             border-radius: 24px;
             padding: 24px 16px;
             text-align: center;
-            margin: auto 0;
             box-shadow: 0 0 35px rgba(147, 51, 234, 0.15);
         }
         .mining-title {
@@ -87,21 +93,26 @@
             color: #9ca3af;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+        }
+        .speed-sub {
+            font-size: 12px;
+            color: #34d399;
+            margin-bottom: 16px;
         }
         .balance-amount {
             font-size: 26px;
             font-weight: bold;
             color: #34d399;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             text-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
             word-break: break-all;
         }
         .coin-container {
             position: relative;
-            width: 130px;
-            height: 130px;
-            margin: 0 auto 24px auto;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px auto;
             background: radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, rgba(18, 16, 31, 0) 70%);
             display: flex;
             align-items: center;
@@ -117,7 +128,7 @@
             transform: scale(0.94);
         }
         .coin-inner-icon {
-            font-size: 42px;
+            font-size: 40px;
             color: #fff;
             font-weight: bold;
         }
@@ -136,7 +147,6 @@
             justify-content: center;
             gap: 8px;
             box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);
-            margin-top: 10px;
         }
         .save-btn:active {
             opacity: 0.85;
@@ -145,28 +155,74 @@
             background: linear-gradient(145deg, #12101f, #1b162c);
             border: 1px solid rgba(147, 51, 234, 0.4);
             border-radius: 24px;
-            padding: 24px;
-            text-align: center;
-            margin: auto 0;
+            padding: 20px;
+            text-align: left;
         }
         .section-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             color: #fff;
             margin-bottom: 12px;
+            text-align: center;
         }
-        .section-desc {
-            font-size: 14px;
+        .profile-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .profile-info-row:last-child {
+            border-bottom: none;
+        }
+        .profile-label {
             color: #9ca3af;
+        }
+        .profile-val {
+            color: #fff;
+            font-weight: 500;
+            text-align: right;
+            max-width: 190px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .boost-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .boost-info h4 {
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .boost-info p {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .boost-btn {
+            background: #9333ea;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
         }
         .nav-bar {
             display: flex;
             justify-content: space-around;
-            background: rgba(27, 22, 44, 0.9);
+            background: rgba(27, 22, 44, 0.95);
             border: 1px solid rgba(147, 51, 234, 0.3);
-            padding: 12px 0;
+            padding: 10px 0;
             border-radius: 16px;
-            margin-top: 20px;
+            margin-top: 16px;
         }
         .nav-item {
             display: flex;
@@ -179,6 +235,7 @@
             cursor: pointer;
             background: transparent;
             border: none;
+            flex: 1;
         }
         .nav-item.active {
             color: #34d399;
@@ -245,15 +302,16 @@
     <div class="user-bar">
         <div class="user-tag">
             <div class="avatar-ph">👑</div>
-            <span>@Leslav</span>
+            <span id="headerUsername">@Leslav</span>
         </div>
-        <div class="wallet-badge">UQDX...RtWw ⌄</div>
+        <div class="wallet-badge" id="headerWallet">UQDX...RtWw</div>
     </div>
 
-    <!-- Головна вкладка -->
+    <!-- Вкладка 1: Головна -->
     <div class="screen-content active" id="screen-home">
         <div class="main-card">
             <div class="mining-title">НАМАЙНЕНО RAY</div>
+            <div class="speed-sub" id="speedSub">Швидкість: +0.0000000001/с</div>
             <div class="balance-amount" id="balanceDisplay">0.0000000021</div>
             
             <div class="coin-container" id="coinButton">
@@ -266,22 +324,44 @@
         </div>
     </div>
 
-    <!-- Вкладка Буст -->
+    <!-- Вкладка 2: Буст -->
     <div class="screen-content" id="screen-boost">
         <div class="section-card">
             <div class="section-title">Прискорювач майнінгу</div>
-            <div class="section-desc">Скоро буде доступно підвищення швидкості.</div>
+            <div class="boost-item">
+                <div class="boost-info">
+                    <h4>Турбо-режим x2</h4>
+                    <p>Подвоює швидкість майнінгу</p>
+                </div>
+                <button class="boost-btn" id="boostBtn">Купити</button>
+            </div>
         </div>
     </div>
 
-    <!-- Вкладка Профіль -->
+    <!-- Вкладка 3: Профіль -->
     <div class="screen-content" id="screen-profile">
         <div class="section-card">
             <div class="section-title">Профіль користувача</div>
-            <div class="section-desc">Акаунт: @Leslav<br>Гаманець: UQDX...RtWw</div>
+            <div class="profile-info-row">
+                <span class="profile-label">Акаунт Telegram:</span>
+                <span class="profile-val" id="profileUser">@Leslav</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-label">Гаманець (TON):</span>
+                <span class="profile-val" id="profileWallet">UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-label">Баланс RAY:</span>
+                <span class="profile-val" id="profileBalance">0.0000000021</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-label">Статус:</span>
+                <span class="profile-val" style="color: #f39c12;">Засновник 👑</span>
+            </div>
         </div>
     </div>
 
+    <!-- Навігація -->
     <div class="nav-bar">
         <button class="nav-item active" onclick="switchTab('home', this)">
             <span>🔥</span>Головна
@@ -294,6 +374,7 @@
         </button>
     </div>
 
+    <!-- Попап -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-box">
             <div class="modal-title">RAY</div>
@@ -306,18 +387,27 @@
         let rayData = {
             balance: 0.0000000021,
             speed: 0.0000000001,
+            username: "@Leslav",
+            wallet: "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw",
             lastTime: Date.now()
         };
 
         const balanceDisplay = document.getElementById('balanceDisplay');
+        const profileBalance = document.getElementById('profileBalance');
+        const speedSub = document.getElementById('speedSub');
         const coinButton = document.getElementById('coinButton');
         const saveBtn = document.getElementById('saveBtn');
+        const boostBtn = document.getElementById('boostBtn');
+        
         const modalOverlay = document.getElementById('modalOverlay');
         const modalText = document.getElementById('modalText');
         const modalClose = document.getElementById('modalClose');
 
         function updateDisplay() {
-            balanceDisplay.innerText = rayData.balance.toFixed(10);
+            const formatted = rayData.balance.toFixed(10);
+            balanceDisplay.innerText = formatted;
+            profileBalance.innerText = formatted;
+            speedSub.innerText = 'Швидкість: +' + rayData.speed.toFixed(10) + '/с';
         }
 
         function showPopup(text) {
@@ -335,6 +425,7 @@
 
             document.getElementById('screen-' + tabName).classList.add('active');
             element.classList.add('active');
+            updateDisplay();
         }
 
         function loadRayData() {
@@ -345,6 +436,8 @@
                             const parsed = JSON.parse(value);
                             rayData.balance = parsed.balance ?? 0.0000000021;
                             rayData.speed = parsed.speed ?? 0.0000000001;
+                            rayData.username = parsed.username ?? "@Leslav";
+                            rayData.wallet = parsed.wallet ?? "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw";
 
                             if (parsed.lastTime) {
                                 const secondsPassed = (Date.now() - parsed.lastTime) / 1000;
@@ -371,6 +464,7 @@
                 try {
                     const parsed = JSON.parse(local);
                     rayData.balance = parsed.balance ?? rayData.balance;
+                    rayData.speed = parsed.speed ?? rayData.speed;
                     updateDisplay();
                 } catch (e) {}
             }
@@ -395,20 +489,32 @@
             }
         }
 
+        // Пасивний майнінг щосекунди
         setInterval(() => {
             rayData.balance += rayData.speed;
             updateDisplay();
         }, 1000);
 
+        // Автозбереження кожні 15 секунд
         setInterval(() => {
             saveRayData(false);
         }, 15000);
 
+        // Клік по монеті
         coinButton.addEventListener('click', () => {
             rayData.balance += 0.0000000005;
             updateDisplay();
         });
 
+        // Кнопка буста
+        boostBtn.addEventListener('click', () => {
+            rayData.speed *= 2;
+            showPopup("Буст успішно активовано! Швидкість подвоєно.");
+            updateDisplay();
+            saveRayData(false);
+        });
+
+        // Кнопка збереження
         saveBtn.addEventListener('click', () => {
             saveRayData(true);
         });
