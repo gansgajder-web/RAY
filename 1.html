@@ -408,7 +408,7 @@
 
         <!-- НАВІГАЦІЯ -->
         <div class="nav-boxes">
-            <a href="index.html" class="nav-box">🏠 Головна</a>
+            <button class="nav-box active-tab" id="tab-mine" onclick="switchTab('mine')">🪙 Майнінг</button>
             <button class="nav-box" id="tab-boost" onclick="switchTab('boost')">⚡ Буст</button>
             <button class="nav-box" id="tab-profile" onclick="switchTab('profile')">👤 Профіль</button>
         </div>
@@ -446,8 +446,7 @@
         let tapReward = 0.0000000001;
         let regDate = new Date().toLocaleDateString('uk-UA');
         let saveTimeout = null;
-        let currentTab = 'mine';
-        let isDataLoaded = false; // Захист від перезапису нулями під час завантаження
+        let isDataLoaded = false;
 
         const balanceEl = document.getElementById('balance');
         const energyTextEl = document.getElementById('energy-text');
@@ -476,16 +475,12 @@
         }
 
         function switchTab(tab) {
-            if (currentTab === tab && tab !== 'mine') {
-                tab = 'mine';
-            }
-            currentTab = tab;
-
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-box').forEach(el => el.classList.remove('active-tab'));
 
             if (tab === 'mine') {
                 document.getElementById('view-mine').classList.add('active');
+                document.getElementById('tab-mine').classList.add('active-tab');
             } else if (tab === 'boost') {
                 document.getElementById('view-boost').classList.add('active');
                 document.getElementById('tab-boost').classList.add('active-tab');
@@ -498,11 +493,12 @@
 
         async function loadUserData() {
             try {
+                // Запитуємо дані гравця з бази
                 const { data, error } = await supabaseClient
                     .from('ray_mining')
                     .select('*')
                     .eq('user_id', userId)
-                    .single();
+                    .maybeSingle();
 
                 if (data) {
                     balance = parseFloat(data.balance) || 0;
@@ -524,15 +520,19 @@
                         regDate = new Date(data.created_at).toLocaleDateString('uk-UA');
                     }
                 } else {
-                    await supabaseClient
-                        .from('ray_mining')
-                        .insert([{
-                            user_id: userId,
-                            username: userName,
-                            balance: 0,
-                            max_energy: 500,
-                            tap_power: 0.0000000001
-                        }]);
+                    // Якщо гравця немає в базі — автоматично створюємо його рядок (авто-ініціалізація)
+                    const newRecord = {
+                        user_id: userId,
+                        username: userName,
+                        balance: 0,
+                        max_energy: 500,
+                        tap_power: 0.0000000001,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    };
+                    
+                    await supabaseClient.from('ray_mining').insert([newRecord]);
+                    balance = 0;
                 }
                 isDataLoaded = true;
                 updateUI();
@@ -546,8 +546,9 @@
         }
 
         function saveImmediately() {
-            if (!isDataLoaded) return; // Не зберігаємо доки дані не підтягнулися з хмари
+            if (!isDataLoaded || balance <= 0 && balance !== 0) return;
             syncStatusEl.textContent = 'Збереження...';
+            
             supabaseClient
                 .from('ray_mining')
                 .upsert({
@@ -566,7 +567,7 @@
         function scheduleSave() {
             syncStatusEl.textContent = 'Збереження...';
             clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveImmediately, 1200);
+            saveTimeout = setTimeout(saveImmediately, 1000);
         }
 
         function updateUI() {
@@ -590,7 +591,7 @@
             const statusEl = document.getElementById('boost-status');
             if (!tonConnectUI.connected) {
                 statusEl.textContent = '⚠️ Спочатку підключіть гаманець угорі!';
-                tonConnectUI.openModal();
+                tonConnectUI.openManager ? tonConnectUI.openManager() : tonConnectUI.openModal();
                 return;
             }
 
@@ -623,8 +624,6 @@
                 updateUI();
                 updateProfileUI();
                 saveImmediately();
-                
-                // ЗАЛИШАЄМОСЯ НА ВКЛАДЦІ МАЙНІНГУ ПІСЛЯ УСПІШНОЇ ОПЛАТИ
                 switchTab('mine');
             } catch (e) {
                 statusEl.textContent = '❌ Оплату скасовано';
