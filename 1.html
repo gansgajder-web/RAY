@@ -493,7 +493,6 @@
 
         async function loadUserData() {
             try {
-                // Запитуємо дані гравця з бази
                 const { data, error } = await supabaseClient
                     .from('ray_mining')
                     .select('*')
@@ -520,7 +519,6 @@
                         regDate = new Date(data.created_at).toLocaleDateString('uk-UA');
                     }
                 } else {
-                    // Якщо гравця немає в базі — автоматично створюємо його рядок (авто-ініціалізація)
                     const newRecord = {
                         user_id: userId,
                         username: userName,
@@ -546,7 +544,7 @@
         }
 
         function saveImmediately() {
-            if (!isDataLoaded || balance <= 0 && balance !== 0) return;
+            if (!isDataLoaded) return;
             syncStatusEl.textContent = 'Збереження...';
             
             supabaseClient
@@ -591,7 +589,7 @@
             const statusEl = document.getElementById('boost-status');
             if (!tonConnectUI.connected) {
                 statusEl.textContent = '⚠️ Спочатку підключіть гаманець угорі!';
-                tonConnectUI.openManager ? tonConnectUI.openManager() : tonConnectUI.openModal();
+                tonConnectUI.openModal();
                 return;
             }
 
@@ -610,59 +608,4 @@
                 await tonConnectUI.sendTransaction(transaction);
 
                 if (type === 'energy') {
-                    maxEnergy += 500;
-                    energy = maxEnergy;
-                    statusEl.textContent = '✅ Енергію збільшено на +500!';
-                } else if (type === 'speed') {
-                    tapReward += 0.0000000005;
-                    statusEl.textContent = '✅ Швидкість тапу збільшено!';
-                } else if (type === 'refill') {
-                    energy = maxEnergy;
-                    statusEl.textContent = '✅ Енергію повністю відновлено!';
-                }
-
-                updateUI();
-                updateProfileUI();
-                saveImmediately();
-                switchTab('mine');
-            } catch (e) {
-                statusEl.textContent = '❌ Оплату скасовано';
-            }
-        }
-
-        coinEl.addEventListener('pointerdown', (e) => {
-            if (!isDataLoaded || energy <= 0) return;
-
-            balance += tapReward;
-            energy -= 1;
-            updateUI();
-            scheduleSave();
-            playClickSound();
-
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-
-            const plus = document.createElement('div');
-            plus.className = 'floating-plus';
-            plus.textContent = `+${tapReward.toFixed(10)}`;
-            const rect = coinEl.getBoundingClientRect();
-            plus.style.left = `${e.clientX - rect.left - 15}px`;
-            plus.style.top = `${e.clientY - rect.top - 15}px`;
-            coinEl.appendChild(plus);
-
-            setTimeout(() => plus.remove(), 900);
-        });
-
-        setInterval(() => {
-            if (energy < maxEnergy) {
-                energy = Math.min(maxEnergy, energy + 2);
-                updateUI();
-            }
-        }, 1000);
-
-        loadUserData();
-    </script>
-
-</body>
-</html>
+                    maxEnergy += 5
