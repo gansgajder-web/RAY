@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAY Token | TON Network</title>
-    <!-- Скрипт Telegram Web App для отримання ніку та аватарки -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Офіційна бібліотека TON Connect UI -->
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         * {
@@ -19,12 +17,11 @@
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            position: relative;
-            padding: 20px 0;
+            padding: 15px 15px 25px 15px;
         }
 
         @keyframes neonPulse {
@@ -57,19 +54,18 @@
             }
         }
 
-        #ton-connect {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 10;
+        /* Верхній рядок: Профіль зліва, Гаманець справа */
+        .top-bar {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
-        /* Блок профілю Telegram угорі ліворуч */
         .tg-profile {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 10;
             background: rgba(18, 24, 38, 0.85);
             border: 1px solid rgba(0, 210, 255, 0.4);
             padding: 5px 12px 5px 6px;
@@ -78,11 +74,11 @@
             align-items: center;
             gap: 8px;
             animation: neonPulse 4s infinite;
-            max-width: 170px;
+            max-width: 155px;
         }
         .tg-avatar {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             object-fit: cover;
             border: 1px solid #00d2ff;
@@ -98,21 +94,47 @@
             text-overflow: ellipsis;
         }
 
+        /* Блок курсу токена під гаманцем і ніком */
+        .price-bar {
+            width: 100%;
+            max-width: 380px;
+            background: rgba(18, 24, 38, 0.85);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 15px;
+            padding: 8px 15px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            animation: neonPulse 4s infinite;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .price-label {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        .price-value {
+            color: #00ffcc;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
+        }
+
         .container {
             text-align: center;
             background: rgba(18, 24, 38, 0.85);
-            padding: 30px 20px;
+            padding: 25px 20px;
             border-radius: 20px;
             border: 2px solid #00d2ff;
             animation: neonPulse 5s infinite;
             max-width: 380px;
-            width: 90%;
-            margin-top: 40px;
+            width: 100%;
         }
         .logo-container {
             position: relative;
-            width: 140px;
-            height: 140px;
+            width: 135px;
+            height: 135px;
             margin: 0 auto 15px auto;
             border-radius: 15px;
             overflow: hidden;
@@ -183,14 +205,20 @@
 </head>
 <body>
 
-    <!-- Профіль користувача Telegram -->
-    <div class="tg-profile">
-        <img id="tg-avatar" class="tg-avatar" src="1793244950894.jpg" alt="Avatar">
-        <span id="tg-name" class="tg-name">Гість</span>
+    <!-- Верхня панель: Нік зліва, Гаманець справа -->
+    <div class="top-bar">
+        <div class="tg-profile">
+            <img id="tg-avatar" class="tg-avatar" src="1793244950894.jpg" alt="Avatar">
+            <span id="tg-name" class="tg-name">Гість</span>
+        </div>
+        <div id="ton-connect"></div>
     </div>
 
-    <!-- Кнопка гаманця -->
-    <div id="ton-connect"></div>
+    <!-- Плашка курсу під ніком і гаманцем (клік відкриває графік на GeckoTerminal) -->
+    <a href="https://www.geckoterminal.com/ton/pools/EQAwkja00aUNZX1bYH4_MlxLvQoH4-JRtfBXqSe4FEKhfwjY" target="_blank" class="price-bar">
+        <span class="price-label">📈 Курс RAY:</span>
+        <span id="ray-price" class="price-value">Завантаження...</span>
+    </a>
 
     <div class="container">
         <div class="logo-container">
@@ -209,7 +237,7 @@
     </div>
 
     <script>
-        // Отримання даних користувача з Telegram WebApp
+        // Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
@@ -218,21 +246,45 @@
         if (user) {
             const nameEl = document.getElementById('tg-name');
             const avatarEl = document.getElementById('tg-avatar');
-
-            // Якщо є @username — ставимо його, інакше беремо ім'я
             nameEl.textContent = user.username ? `@${user.username}` : user.first_name;
-
-            // Якщо у профілі відкрита аватарка — підтягуємо її
             if (user.photo_url) {
                 avatarEl.src = user.photo_url;
             }
         }
 
-        // Ініціалізація TON Connect
+        // TON Connect
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://gansgajder-web.github.io/RAY/tonconnect-manifest.json',
             buttonRootId: 'ton-connect'
         });
+
+        // Отримання актуальної ціни RAY з GeckoTerminal API
+        const POOL_ADDRESS = 'EQAwkja00aUNZX1bYH4_MlxLvQoH4-JRtfBXqSe4FEKhfwjY';
+        
+        async function fetchRayPrice() {
+            const priceEl = document.getElementById('ray-price');
+            try {
+                const response = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/pools/${POOL_ADDRESS}`);
+                const data = await response.json();
+                const attr = data.data.attributes;
+                
+                // Ціна в доларах та зміна за 24 години
+                const priceUsd = parseFloat(attr.base_token_price_usd);
+                const change24h = parseFloat(attr.price_change_percentage.h24);
+                
+                // Форматуємо красиве відображення ціни (до 6 знаків після коми для дрібних значень)
+                const formattedPrice = priceUsd < 0.01 ? priceUsd.toFixed(6) : priceUsd.toFixed(4);
+                const sign = change24h >= 0 ? '+' : '';
+                const changeColor = change24h >= 0 ? '#00ffcc' : '#ff4d6d';
+
+                priceEl.innerHTML = `$${formattedPrice} <span style="color:${changeColor}; font-size:12px;">(${sign}${change24h.toFixed(1)}%)</span>`;
+            } catch (error) {
+                priceEl.textContent = 'Дивитись графік ↗';
+            }
+        }
+
+        fetchRayPrice();
+        setInterval(fetchRayPrice, 30000); // Оновлення курсу кожні 30 секунд
     </script>
 
 </body>
