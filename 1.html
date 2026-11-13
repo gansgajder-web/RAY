@@ -21,11 +21,20 @@
             justify-content: space-between;
             padding: 16px;
         }
-        .top-bar {
+        .app-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 18px;
+            font-weight: 600;
             margin-bottom: 12px;
+            padding: 0 4px;
+        }
+        .user-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
         .user-tag {
             background: rgba(255, 255, 255, 0.05);
@@ -54,15 +63,6 @@
             padding: 6px 12px;
             font-size: 13px;
             color: #ccc;
-        }
-        .header-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            padding: 0 4px;
         }
         .screen-content {
             display: none;
@@ -236,7 +236,13 @@
 </head>
 <body>
 
-    <div class="top-bar">
+    <div class="app-header">
+        <span>✕</span>
+        <span>RAY</span>
+        <span>⌄ ⋮</span>
+    </div>
+
+    <div class="user-bar">
         <div class="user-tag">
             <div class="avatar-ph">👑</div>
             <span>@Leslav</span>
@@ -244,13 +250,7 @@
         <div class="wallet-badge">UQDX...RtWw ⌄</div>
     </div>
 
-    <div class="header-nav">
-        <span>✕</span>
-        <span>RAY</span>
-        <span>⋮</span>
-    </div>
-
-    <!-- Вкладка 1: Головна -->
+    <!-- Головна вкладка -->
     <div class="screen-content active" id="screen-home">
         <div class="main-card">
             <div class="mining-title">НАМАЙНЕНО RAY</div>
@@ -266,15 +266,15 @@
         </div>
     </div>
 
-    <!-- Вкладка 2: Буст -->
+    <!-- Вкладка Буст -->
     <div class="screen-content" id="screen-boost">
         <div class="section-card">
             <div class="section-title">Прискорювач майнінгу</div>
-            <div class="section-desc">Скоро буде доступно підвищення швидкості майнінгу RAY.</div>
+            <div class="section-desc">Скоро буде доступно підвищення швидкості.</div>
         </div>
     </div>
 
-    <!-- Вкладка 3: Профіль -->
+    <!-- Вкладка Профіль -->
     <div class="screen-content" id="screen-profile">
         <div class="section-card">
             <div class="section-title">Профіль користувача</div>
@@ -282,7 +282,6 @@
         </div>
     </div>
 
-    <!-- Нижня навігація -->
     <div class="nav-bar">
         <button class="nav-item active" onclick="switchTab('home', this)">
             <span>🔥</span>Головна
@@ -295,7 +294,6 @@
         </button>
     </div>
 
-    <!-- Модальне вікно збереження -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-box">
             <div class="modal-title">RAY</div>
@@ -335,8 +333,6 @@
             document.querySelectorAll('.screen-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-            document.getElementById('screen- ' + tabName).classList.add('active'); // Зверніть увагу на ідентифікатори нижче
-            // Виправлений виклик нижче через фікс рядка:
             document.getElementById('screen-' + tabName).classList.add('active');
             element.classList.add('active');
         }
