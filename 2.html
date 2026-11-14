@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAY Journal | Живий журнал</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -263,10 +262,6 @@
     <script>
         const SUPABASE_URL = 'https://ordlwuikqsvgyybuqtj.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_rg7Z1F-ws8Y9zmUwDLXDVA_zpH6K8pw';
-        let supabaseClient = null;
-        try {
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        } catch(e) {}
 
         let tg = null;
         try {
@@ -291,19 +286,17 @@
 
         async function loadJournalPosts() {
             const feedEl = document.getElementById('journal-feed');
-            if (!supabaseClient) {
-                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка: клієнт Supabase не ініціалізовано</div></div>';
-                return;
-            }
-
             try {
-                const { data, error } = await supabaseClient
-                    .from('ray_journal')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(20);
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/ray_journal?select=*&order=created_at.desc&limit=20`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
 
-                if (error) throw error;
+                if (!response.ok) throw new Error('Помилка сервера: ' + response.status);
+
+                const data = await response.json();
 
                 if (data && data.length > 0) {
                     feedEl.innerHTML = '';
@@ -328,8 +321,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                // ВИВОДИМО ТОЧНИЙ ТЕКСТ ПОМИЛКИ НА ЕКРАН ДЛЯ ДІАГНОСТИКИ
-                feedEl.innerHTML = `<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка бази: ${escapeHtml(err.message || JSON.stringify(err))}</div></div>`;
+                feedEl.innerHTML = `<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка: ${escapeHtml(err.message)}</div></div>`;
             }
         }
 
@@ -343,23 +335,25 @@
                 return;
             }
 
-            if (!supabaseClient) {
-                statusEl.textContent = '❌ Немає бази даних';
-                return;
-            }
-
             statusEl.textContent = 'Публікація...';
 
             try {
-                const { error } = await supabaseClient
-                    .from('ray_journal')
-                    .insert([{
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/ray_journal`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
                         user_id: userId,
                         username: userName,
                         content: content
-                    }]);
+                    })
+                });
 
-                if (error) throw error;
+                if (!response.ok) throw new Error('Не вдалося опублікувати');
 
                 textarea.value = '';
                 statusEl.textContent = 'Опубліковано ✓';
