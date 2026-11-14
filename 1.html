@@ -478,9 +478,8 @@
             buttonRootId: 'ton-connect'
         });
 
-        // МИТТЄВЕ завантаження з пам'яті телефону, щоб нулів на екрані не було ніколи!
         let savedBalance = parseFloat(localStorage.getItem('ray_saved_balance')) || 0;
-        let balance = parseFloat(localStorage.getItem('ray_balance')) || savedBalance;
+        let balance = 0; // Зелений лічильник тапання завжди починається з 0 або додається в банк
         let energy = 500;
         let maxEnergy = 500;
         let tapReward = 0.0000000001;
@@ -550,7 +549,6 @@
                     const cloudBalance = parseFloat(data.balance) || 0;
                     if (cloudBalance >= savedBalance) {
                         savedBalance = cloudBalance;
-                        balance = Math.max(balance, savedBalance);
                     }
                     maxEnergy = parseInt(data.max_energy) || 500;
                     tapReward = parseFloat(data.tap_power) || 0.0000000001;
@@ -578,13 +576,21 @@
         }
 
         function saveLocal() {
-            localStorage.setItem('ray_balance', balance);
             localStorage.setItem('ray_saved_balance', savedBalance);
         }
 
         async function manualSaveClick() {
+            if (balance <= 0) {
+                syncStatusEl.textContent = 'Нічого тапати ✓';
+                return;
+            }
+
             syncStatusEl.textContent = 'Збереження в банк...';
-            savedBalance = balance;
+            
+            // Додаємо натапане до банку і ОБНУЛЯЄМО зелений лічильник тапання
+            savedBalance += balance;
+            balance = 0; 
+            
             saveLocal();
 
             try {
@@ -616,7 +622,10 @@
         }
 
         async function goToHome() {
-            savedBalance = balance;
+            if (balance > 0) {
+                savedBalance += balance;
+                balance = 0;
+            }
             saveLocal();
             try {
                 await supabaseClient.from('ray_mining').upsert({
@@ -681,7 +690,6 @@
                     statusEl.textContent = '✅ Енергію повністю відновлено!';
                 }
 
-                savedBalance = balance;
                 saveLocal();
                 updateUI();
                 updateProfileUI();
@@ -696,7 +704,6 @@
             if (energy <= 0) return;
 
             balance += tapReward;
-            saveLocal();
             updateUI();
             playClickSound();
 
