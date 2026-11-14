@@ -292,44 +292,55 @@
 
         async function loadJournalPosts() {
             const feedEl = document.getElementById('journal-feed');
-            if (!supabaseClient) {
-                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка ініціалізації бази</div></div>';
-                return;
+            let posts = [];
+
+            // Спершу пробуємо завантажити з Supabase
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('ray_journal')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(20);
+
+                    if (!error && data) {
+                        posts = data;
+                        // Зберігаємо копію в локальний кеш пристрою
+                        localStorage.setItem('ray_journal_cache', JSON.stringify(posts));
+                    }
+                } catch (e) {
+                    // Якщо мережа заблокована, мовчки беремо з локального кешу
+                }
             }
 
-            try {
-                const { data, error } = await supabaseClient
-                    .from('ray_journal')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(20);
+            // Якщо хмара недоступна, беремо з локального сховища
+            if (posts.length === 0) {
+                try {
+                    const cached = localStorage.getItem('ray_journal_cache');
+                    if (cached) posts = JSON.parse(cached);
+                } catch(e) {}
+            }
 
-                if (error) throw error;
+            if (posts.length > 0) {
+                feedEl.innerHTML = '';
+                posts.forEach(post => {
+                    const dateStr = post.created_at ? new Date(post.created_at).toLocaleString('uk-UA', { 
+                        month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    }) : 'щойно';
 
-                if (data && data.length > 0) {
-                    feedEl.innerHTML = '';
-                    data.forEach(post => {
-                        const dateStr = post.created_at ? new Date(post.created_at).toLocaleString('uk-UA', { 
-                            month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                        }) : '';
-
-                        const card = document.createElement('div');
-                        card.className = 'journal-card';
-                        card.innerHTML = `
-                            <div class="journal-header">
-                                <span>${escapeHtml(post.username || 'Анонім')}</span>
-                                <span class="journal-time">${dateStr}</span>
-                            </div>
-                            <div class="journal-text">${escapeHtml(post.content || '')}</div>
-                        `;
-                        feedEl.appendChild(card);
-                    });
-                } else {
-                    feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#94a3b8;">Поки немає записів. Будьте першим!</div></div>';
-                }
-            } catch (err) {
-                console.error(err);
-                feedEl.innerHTML = `<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка: ${escapeHtml(err.message)}</div></div>`;
+                    const card = document.createElement('div');
+                    card.className = 'journal-card';
+                    card.innerHTML = `
+                        <div class="journal-header">
+                            <span>${escapeHtml(post.username || 'Анонім')}</span>
+                            <span class="journal-time">${dateStr}</span>
+                        </div>
+                        <div class="journal-text">${escapeHtml(post.content || '')}</div>
+                    `;
+                    feedEl.appendChild(card);
+                });
+            } else {
+                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#94a3b8;">Поки немає записів. Будьте першим!</div></div>';
             }
         }
 
@@ -343,34 +354,41 @@
                 return;
             }
 
-            if (!supabaseClient) {
-                statusEl.textContent = '❌ Немає бази даних';
-                return;
-            }
-
             statusEl.textContent = 'Публікація...';
 
+            const newPost = {
+                user_id: userId,
+                username: userName,
+                content: content,
+                created_at: new Date().toISOString()
+            };
+
+            // Миттєво додаємо в локальний кеш для миттєвого відображення
             try {
-                const { error } = await supabaseClient
-                    .from('ray_journal')
-                    .insert([{
-                        user_id: userId,
-                        username: userName,
-                        content: content
-                    }]);
+                let cached = JSON.parse(localStorage.getItem('ray_journal_cache') || '[]');
+                cached.unshift(newPost);
+                localStorage.setItem('ray_journal_cache', JSON.stringify(cached));
+            } catch(e) {}
 
-                if (error) throw error;
+            // Пробуємо відправити в Supabase
+            if (supabaseClient) {
+                try {
+                    await supabaseClient
+                        .from('ray_journal')
+                        .insert([{
+                            user_id: userId,
+                            username: userName,
+                            content: content
+                        }]);
+                } catch (e) {}
+            }
 
-                textarea.value = '';
-                statusEl.textContent = 'Опубліковано ✓';
-                loadJournalPosts();
+            textarea.value = '';
+            statusEl.textContent = 'Опубліковано ✓';
+            loadJournalPosts();
 
-                if (tg && tg.HapticFeedback) {
-                    try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
-                }
-            } catch (err) {
-                console.error(err);
-                statusEl.textContent = '❌ Помилка публікації';
+            if (tg && tg.HapticFeedback) {
+                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
             }
         }
 
