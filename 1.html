@@ -335,10 +335,50 @@
             font-weight: 600;
         }
 
+        .leaderboard-list {
+            background: rgba(11, 15, 25, 0.75);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 14px;
+            padding: 10px;
+            margin-bottom: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 12px;
+        }
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+        .lb-rank {
+            font-weight: 700;
+            color: #00d2ff;
+            width: 25px;
+        }
+        .lb-user {
+            flex: 1;
+            color: #ffffff;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 8px;
+        }
+        .lb-score {
+            color: #ff007f;
+            font-weight: 700;
+        }
+
         .nav-boxes {
             display: flex;
             justify-content: space-between;
-            gap: 8px;
+            gap: 5px;
             border-top: 1px solid rgba(0, 210, 255, 0.2);
             padding-top: 12px;
             margin-top: 8px;
@@ -347,12 +387,12 @@
             flex: 1;
             background: rgba(11, 15, 25, 0.6);
             border: 1px solid rgba(0, 210, 255, 0.4);
-            border-radius: 12px;
-            padding: 10px 4px;
+            border-radius: 10px;
+            padding: 8px 2px;
             text-align: center;
             text-decoration: none;
             color: #ffffff;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -474,13 +514,25 @@
             </div>
         </div>
 
-        <!-- НАВІГАЦІЯ -->
-        <div class="nav-boxes">
-            <div id="nav-left-btn" style="flex: 1; display: flex;">
-                <button class="nav-box" onclick="goToHome()">🏠 Головна</button>
+        <!-- ВКЛАДКА 4: ТОП (РЕЙТИНГ) -->
+        <div id="view-top" class="view-section">
+            <div class="section-title">🏆 ТОП Майнерів</div>
+            <div class="leaderboard-list" id="leaderboard-container">
+                <div class="leaderboard-item">
+                    <span class="lb-rank">1.</span>
+                    <span class="lb-user">Завантаження...</span>
+                    <span class="lb-score">0 RAY</span>
+                </div>
             </div>
+            <div class="status-text" style="color:#94a3b8;">Рейтинг оновлюється в реальному часі</div>
+        </div>
+
+        <!-- НАВІГАЦІЯ (4 КНОПКИ) -->
+        <div class="nav-boxes">
+            <button class="nav-box active-tab" id="tab-mine" onclick="switchTab('mine')">🪙 Майнінг</button>
             <button class="nav-box" id="tab-boost" onclick="switchTab('boost')">⚡ Буст</button>
             <button class="nav-box" id="tab-profile" onclick="switchTab('profile')">👤 Профіль</button>
+            <button class="nav-box" id="tab-top" onclick="switchTab('top')">🏆 Топ</button>
         </div>
 
     </div>
@@ -543,7 +595,6 @@
         const energyFillEl = document.getElementById('energy-fill');
         const syncStatusEl = document.getElementById('sync-status');
         const coinEl = document.getElementById('tap-coin');
-        const navLeftBtnEl = document.getElementById('nav-left-btn');
 
         updateUI();
 
@@ -593,18 +644,56 @@
 
             if (tab === 'mine') {
                 document.getElementById('view-mine').classList.add('active');
-                navLeftBtnEl.innerHTML = `<button class="nav-box" onclick="goToHome()">🏠 Головна</button>`;
-            } else {
-                navLeftBtnEl.innerHTML = `<button class="nav-box" onclick="switchTab('mine')">🪙 Майнінг</button>`;
-                
-                if (tab === 'boost') {
-                    document.getElementById('view-boost').classList.add('active');
-                    document.getElementById('tab-boost').classList.add('active-tab');
-                } else if (tab === 'profile') {
-                    updateProfileUI();
-                    document.getElementById('view-profile').classList.add('active');
-                    document.getElementById('tab-profile').classList.add('active-tab');
+                document.getElementById('tab-mine').classList.add('active-tab');
+            } else if (tab === 'boost') {
+                document.getElementById('view-boost').classList.add('active');
+                document.getElementById('tab-boost').classList.add('active-tab');
+            } else if (tab === 'profile') {
+                updateProfileUI();
+                document.getElementById('view-profile').classList.add('active');
+                document.getElementById('tab-profile').classList.add('active-tab');
+            } else if (tab === 'top') {
+                loadLeaderboard();
+                document.getElementById('view-top').classList.add('active');
+                document.getElementById('tab-top').classList.add('active-tab');
+            }
+        }
+
+        async function loadLeaderboard() {
+            const container = document.getElementById('leaderboard-container');
+            container.innerHTML = '<div class="leaderboard-item"><span class="lb-rank">...</span><span class="lb-user">Завантаження рейтингу...</span><span class="lb-score"></span></div>';
+            
+            if (!supabaseClient) {
+                container.innerHTML = '<div class="leaderboard-item"><span class="lb-rank">1.</span><span class="lb-user">' + userName + '</span><span class="lb-score">' + savedBalance.toFixed(4) + ' RAY</span></div>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('ray_mining')
+                    .select('username, balance')
+                    .order('balance', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    container.innerHTML = '';
+                    data.forEach((row, index) => {
+                        const rank = index + 1;
+                        const name = row.username || 'Гравець';
+                        const score = parseFloat(row.balance || 0).toFixed(4) + ' RAY';
+                        
+                        const item = document.createElement('div');
+                        item.className = 'leaderboard-item';
+                        item.innerHTML = `<span class="lb-rank">${rank}.</span><span class="lb-user">${name}</span><span class="lb-score">${score}</span>`;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = '<div class="leaderboard-item"><span class="lb-rank">1.</span><span class="lb-user">Поки немає учасників</span><span class="lb-score">0 RAY</span></div>';
                 }
+            } catch (e) {
+                container.innerHTML = '<div class="leaderboard-item"><span class="lb-rank">1.</span><span class="lb-user">' + userName + '</span><span class="lb-score">' + savedBalance.toFixed(4) + ' RAY</span></div>';
             }
         }
 
@@ -692,34 +781,12 @@
             updateUI();
         }
 
-        async function goToHome() {
-            if (balance > 0) {
-                savedBalance += balance;
-                balance = 0;
-                playSaveSound();
-            }
-            saveLocal();
-            if (supabaseClient) {
-                try {
-                    await supabaseClient.from('ray_mining').upsert({
-                        user_id: userId,
-                        username: userName,
-                        balance: parseFloat(savedBalance.toFixed(10)),
-                        max_energy: maxEnergy,
-                        tap_power: parseFloat(tapReward.toFixed(10))
-                    }, { onConflict: 'user_id' });
-                } catch(e) {}
-            }
-            window.location.href = 'index.html';
-        }
-
         function updateUI() {
             balanceEl.textContent = balance.toFixed(10);
             savedBalanceEl.textContent = savedBalance.toFixed(10);
             energyTextEl.textContent = `${energy} / ${maxEnergy}`;
             energyFillEl.style.width = `${Math.min(100, (energy / maxEnergy) * 100)}%`;
 
-            // Поява кнопки виводу при досягненні 1 RAY
             const withdrawBtn = document.getElementById('withdraw-btn');
             if (savedBalance >= 1.0) {
                 withdrawBtn.style.display = 'block';
@@ -728,14 +795,38 @@
             }
         }
 
-        function requestWithdrawal() {
+        async function requestWithdrawal() {
+            if (savedBalance < 1.0) return;
+
+            const withdrawAmount = savedBalance;
             const walletAddress = tonConnectUI && tonConnectUI.wallet ? tonConnectUI.wallet.account.address : 'Гаманець не підключено';
             
+            // Обнуляємо рахунок у банку
+            savedBalance = 0;
+            saveLocal();
+            updateUI();
+            syncStatusEl.textContent = 'Заявку оформлено, рахунок обнулено ✓';
+
+            // Оновлюємо баланс у базі даних Supabase
+            if (supabaseClient) {
+                try {
+                    await supabaseClient
+                        .from('ray_mining')
+                        .upsert({
+                            user_id: userId,
+                            username: userName,
+                            balance: 0,
+                            max_energy: maxEnergy,
+                            tap_power: parseFloat(tapReward.toFixed(10))
+                        }, { onConflict: 'user_id' });
+                } catch (e) {}
+            }
+
             const message = encodeURIComponent(
                 `📤 ЗАЯВКА НА ВИВІД RAY\n` +
                 `👤 Нік: ${userName}\n` +
                 `🆔 Telegram ID: ${userId}\n` +
-                `💰 Сума: ${savedBalance.toFixed(10)} RAY\n` +
+                `💰 Сума: ${withdrawAmount.toFixed(10)} RAY\n` +
                 `👛 Гаманець TON: ${walletAddress}`
             );
 
