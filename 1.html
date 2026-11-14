@@ -419,7 +419,7 @@
 
     <div class="container">
         
-        <!-- ВКЛАДКА 1: МАЙНІНГ -->
+        <!-- ВКЛАДКА 1: ГОЛОВНИЙ ЕКРАН МАЙНІНГУ -->
         <div id="view-mine" class="view-section active">
             <div class="balances-grid">
                 <div class="balance-box">
@@ -527,9 +527,9 @@
             <div class="status-text" style="color:#94a3b8;">Рейтинг оновлюється в реальному часі</div>
         </div>
 
-        <!-- НАВІГАЦІЯ (4 КНОПКИ) -->
+        <!-- НАВІГАЦІЯ (ПЕРША КНОПКА — ПОСИЛАННЯ НА INDEX.HTML) -->
         <div class="nav-boxes">
-            <button class="nav-box active-tab" id="tab-mine" onclick="switchTab('mine')">🪙 Майнінг</button>
+            <button class="nav-box" onclick="goToHome()">🏠 Головна</button>
             <button class="nav-box" id="tab-boost" onclick="switchTab('boost')">⚡ Буст</button>
             <button class="nav-box" id="tab-profile" onclick="switchTab('profile')">👤 Профіль</button>
             <button class="nav-box" id="tab-top" onclick="switchTab('top')">🏆 Топ</button>
@@ -642,10 +642,7 @@
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-box').forEach(el => el.classList.remove('active-tab'));
 
-            if (tab === 'mine') {
-                document.getElementById('view-mine').classList.add('active');
-                document.getElementById('tab-mine').classList.add('active-tab');
-            } else if (tab === 'boost') {
+            if (tab === 'boost') {
                 document.getElementById('view-boost').classList.add('active');
                 document.getElementById('tab-boost').classList.add('active-tab');
             } else if (tab === 'profile') {
@@ -657,6 +654,28 @@
                 document.getElementById('view-top').classList.add('active');
                 document.getElementById('tab-top').classList.add('active-tab');
             }
+        }
+
+        // Перехід на головну (index.html) зі збереженням балансу
+        async function goToHome() {
+            if (balance > 0) {
+                savedBalance += balance;
+                balance = 0;
+                playSaveSound();
+            }
+            saveLocal();
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('ray_mining').upsert({
+                        user_id: userId,
+                        username: userName,
+                        balance: parseFloat(savedBalance.toFixed(10)),
+                        max_energy: maxEnergy,
+                        tap_power: parseFloat(tapReward.toFixed(10))
+                    }, { onConflict: 'user_id' });
+                } catch(e) {}
+            }
+            window.location.href = 'index.html';
         }
 
         async function loadLeaderboard() {
@@ -801,13 +820,11 @@
             const withdrawAmount = savedBalance;
             const walletAddress = tonConnectUI && tonConnectUI.wallet ? tonConnectUI.wallet.account.address : 'Гаманець не підключено';
             
-            // Обнуляємо рахунок у банку
             savedBalance = 0;
             saveLocal();
             updateUI();
             syncStatusEl.textContent = 'Заявку оформлено, рахунок обнулено ✓';
 
-            // Оновлюємо баланс у базі даних Supabase
             if (supabaseClient) {
                 try {
                     await supabaseClient
@@ -888,7 +905,7 @@
                 updateUI();
                 updateProfileUI();
                 await manualSaveClick();
-                switchTab('mine');
+                switchTab('boost');
             } catch (e) {
                 statusEl.textContent = '❌ Оплату скасовано';
             }
