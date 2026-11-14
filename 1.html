@@ -240,11 +240,29 @@
             font-size: 13px;
             font-weight: 800;
             cursor: pointer;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4);
             transition: transform 0.1s ease;
         }
         .save-btn:active {
+            transform: scale(0.96);
+        }
+
+        .withdraw-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff007f, #7928ca);
+            border: none;
+            color: #ffffff;
+            padding: 9px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+            transition: transform 0.1s ease;
+        }
+        .withdraw-btn:active {
             transform: scale(0.96);
         }
 
@@ -391,6 +409,7 @@
             <div class="status-text" id="sync-status">Готово до праці ✓</div>
 
             <button class="save-btn" onclick="manualSaveClick()">💾 Зберегти прогрес у банк</button>
+            <button id="withdraw-btn" class="withdraw-btn" onclick="requestWithdrawal()" style="display: none;">📤 Вивести 1 RAY у бот</button>
         </div>
 
         <!-- ВКЛАДКА 2: БУСТИ -->
@@ -602,194 +621,4 @@
                 if (data) {
                     const cloudBalance = parseFloat(data.balance) || 0;
                     if (cloudBalance >= savedBalance) {
-                        savedBalance = cloudBalance;
-                    }
-                    maxEnergy = parseInt(data.max_energy) || 500;
-                    if (energy > maxEnergy) energy = maxEnergy;
-                    tapReward = parseFloat(data.tap_power) || 0.0000000001;
-                    if (data.created_at) {
-                        regDate = new Date(data.created_at).toLocaleDateString('uk-UA');
-                    }
-                    saveLocal();
-                    updateUI();
-                    syncStatusEl.textContent = 'Збережено в хмарі ✓';
-                } else {
-                    await supabaseClient.from('ray_mining').insert([{
-                        user_id: userId,
-                        username: userName,
-                        balance: savedBalance,
-                        max_energy: maxEnergy,
-                        tap_power: tapReward
-                    }]);
-                    syncStatusEl.textContent = 'Готово до праці ✓';
-                }
-                updateProfileUI();
-            } catch (err) {
-                syncStatusEl.textContent = 'Дані захищено на пристрої ✓';
-            }
-        }
-
-        function saveLocal() {
-            localStorage.setItem('ray_saved_balance', savedBalance);
-            localStorage.setItem('ray_energy', energy);
-            localStorage.setItem('ray_max_energy', maxEnergy);
-        }
-
-        async function manualSaveClick() {
-            if (balance <= 0) {
-                syncStatusEl.textContent = 'Нічого тапати ✓';
-                return;
-            }
-
-            syncStatusEl.textContent = 'Збереження в банк...';
-            
-            savedBalance += balance;
-            balance = 0; 
-            saveLocal();
-            playSaveSound();
-
-            if (supabaseClient) {
-                try {
-                    await supabaseClient
-                        .from('ray_mining')
-                        .upsert({
-                            user_id: userId,
-                            username: userName,
-                            balance: parseFloat(savedBalance.toFixed(10)),
-                            max_energy: maxEnergy,
-                            tap_power: parseFloat(tapReward.toFixed(10))
-                        }, { onConflict: 'user_id' });
-                    syncStatusEl.textContent = 'Збережено в банку ✓';
-                } catch (err) {
-                    syncStatusEl.textContent = 'Збережено на пристрої ✓';
-                }
-            } else {
-                syncStatusEl.textContent = 'Збережено на пристрої ✓';
-            }
-
-            if (tg && tg.HapticFeedback) {
-                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
-            }
-            updateUI();
-        }
-
-        async function goToHome() {
-            if (balance > 0) {
-                savedBalance += balance;
-                balance = 0;
-                playSaveSound();
-            }
-            saveLocal();
-            if (supabaseClient) {
-                try {
-                    await supabaseClient.from('ray_mining').upsert({
-                        user_id: userId,
-                        username: userName,
-                        balance: parseFloat(savedBalance.toFixed(10)),
-                        max_energy: maxEnergy,
-                        tap_power: parseFloat(tapReward.toFixed(10))
-                    }, { onConflict: 'user_id' });
-                } catch(e) {}
-            }
-            window.location.href = 'index.html';
-        }
-
-        function updateUI() {
-            balanceEl.textContent = balance.toFixed(10);
-            savedBalanceEl.textContent = savedBalance.toFixed(10);
-            energyTextEl.textContent = `${energy} / ${maxEnergy}`;
-            energyFillEl.style.width = `${Math.min(100, (energy / maxEnergy) * 100)}%`;
-        }
-
-        function updateProfileUI() {
-            document.getElementById('prof-nick').textContent = userName;
-            document.getElementById('prof-id').textContent = userId;
-            document.getElementById('prof-date').textContent = regDate;
-            document.getElementById('prof-power').textContent = `${tapReward.toFixed(10)} RAY`;
-            document.getElementById('prof-max-energy').textContent = maxEnergy;
-            
-            const wallet = tonConnectUI ? tonConnectUI.wallet : null;
-            document.getElementById('prof-wallet').textContent = wallet ? 'Підключено ✓' : 'Не підключено';
-        }
-
-        async function buyUpgrade(type) {
-            const statusEl = document.getElementById('boost-status');
-            if (!tonConnectUI || !tonConnectUI.connected) {
-                statusEl.textContent = '⚠️ Спочатку підключіть гаманець угорі!';
-                if (tonConnectUI) tonConnectUI.openModal();
-                return;
-            }
-
-            const transaction = {
-                validUntil: Math.floor(Date.now() / 1000) + 300,
-                messages: [
-                    {
-                        address: RECEIVER_WALLET,
-                        amount: '10000000'
-                    }
-                ]
-            };
-
-            try {
-                statusEl.textContent = 'Підтвердіть транзакцію в гаманці...';
-                await tonConnectUI.sendTransaction(transaction);
-
-                if (type === 'energy') {
-                    maxEnergy += 500;
-                    energy = maxEnergy;
-                    statusEl.textContent = '✅ Енергію збільшено на +500!';
-                } else if (type === 'speed') {
-                    tapReward += 0.0000000005;
-                    statusEl.textContent = '✅ Швидкість тапу збільшено!';
-                } else if (type === 'refill') {
-                    energy = maxEnergy;
-                    statusEl.textContent = '✅ Енергію повністю відновлено!';
-                }
-
-                saveLocal();
-                updateUI();
-                updateProfileUI();
-                await manualSaveClick();
-                switchTab('mine');
-            } catch (e) {
-                statusEl.textContent = '❌ Оплату скасовано';
-            }
-        }
-
-        coinEl.addEventListener('pointerdown', (e) => {
-            if (energy <= 0) return;
-
-            energy -= 1;
-            balance += tapReward;
-            saveLocal();
-            updateUI();
-            playClickSound();
-
-            if (tg && tg.HapticFeedback) {
-                try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
-            }
-
-            const plus = document.createElement('div');
-            plus.className = 'floating-plus';
-            plus.textContent = `+${tapReward.toFixed(10)}`;
-            const rect = coinEl.getBoundingClientRect();
-            plus.style.left = `${e.clientX - rect.left - 15}px`;
-            plus.style.top = `${e.clientY - rect.top - 15}px`;
-            coinEl.appendChild(plus);
-
-            setTimeout(() => plus.remove(), 900);
-        });
-
-        setInterval(() => {
-            if (energy < maxEnergy) {
-                energy = Math.min(maxEnergy, energy + 2);
-                saveLocal();
-                updateUI();
-            }
-        }, 1000);
-
-        loadUserData();
-    </script>
-
-</body>
-</html>
+                        savedBalance = cloud
