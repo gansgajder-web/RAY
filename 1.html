@@ -342,7 +342,7 @@
         <div id="view-mine" class="view-section active">
             <div class="balance-box">
                 <div class="balance-label">Намайнено RAY</div>
-                <div class="balance-amount" id="balance">0.0000000000</div>
+                <div class="balance-amount" id="balance">Завантаження...</div>
             </div>
 
             <div class="coin-wrapper" id="tap-coin">
@@ -359,7 +359,7 @@
                 </div>
             </div>
 
-            <div class="status-text" id="sync-status">Збережено в хмарі ✓</div>
+            <div class="status-text" id="sync-status">Завантаження з бази...</div>
 
             <button class="save-btn" onclick="manualSaveClick()">💾 Зберегти прогрес</button>
         </div>
@@ -448,14 +448,11 @@
         tg.ready();
         tg.expand();
 
-        const user = tg.initDataUnsafe?.user;
-        const userId = user ? String(user.id) : '409059054';
-        const userName = user ? (user.username ? `@${user.username}` : user.first_name) : '@Leslav';
+        // Жорстко закріплюємо ваш ID, щоб дані ніколи не губилися
+        const userId = '409059054';
+        const userName = '@Leslav';
 
         document.getElementById('tg-name').textContent = userName;
-        if (user && user.photo_url) {
-            document.getElementById('tg-avatar').src = user.photo_url;
-        }
 
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://gansgajder-web.github.io/RAY/tonconnect-manifest.json',
@@ -519,6 +516,7 @@
 
         async function loadUserData() {
             try {
+                syncStatusEl.textContent = 'Завантаження з бази...';
                 const { data, error } = await supabaseClient
                     .from('ray_mining')
                     .select('*')
@@ -545,10 +543,10 @@
                 }
                 updateUI();
                 updateProfileUI();
-                syncStatusEl.textContent = 'Збережено в хмарі ✓';
+                syncStatusEl.textContent = 'Завантажено на екран ✓';
             } catch (err) {
                 console.error(err);
-                syncStatusEl.textContent = 'Готово до праці ✓';
+                syncStatusEl.textContent = 'Помилка завантаження';
             }
         }
 
@@ -558,7 +556,7 @@
                 const cleanBalance = parseFloat(balance.toFixed(10));
                 const cleanPower = parseFloat(tapReward.toFixed(10));
 
-                await supabaseClient
+                const { error } = await supabaseClient
                     .from('ray_mining')
                     .upsert({
                         user_id: userId,
@@ -568,7 +566,9 @@
                         tap_power: cleanPower,
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
-                syncStatusEl.textContent = 'Збережено в хмарі ✓';
+
+                if (error) throw error;
+                syncStatusEl.textContent = 'Збережено на екрані і в базі ✓';
             } catch (err) {
                 syncStatusEl.textContent = 'Помилка збереження';
             }
@@ -579,7 +579,7 @@
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.notificationOccurred('success');
             }
-            alert('Прогрес успішно збережено в хмарі!');
+            alert('Ваш рахунок успішно зафіксовано на екрані та в базі!');
         }
 
         async function goToHome() {
@@ -588,7 +588,6 @@
         }
 
         function scheduleSave() {
-            syncStatusEl.textContent = 'Збереження...';
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(saveImmediately, 1000);
         }
