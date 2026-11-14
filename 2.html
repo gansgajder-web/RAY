@@ -330,7 +330,8 @@
                     feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#94a3b8;">Поки немає записів. Будьте першим!</div></div>';
                 }
             } catch (err) {
-                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Створіть таблицю ray_journal у Supabase</div></div>';
+                console.error(err);
+                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка завантаження стрічки</div></div>';
             }
         }
 
@@ -370,6 +371,7 @@
                     try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
                 }
             } catch (err) {
+                console.error(err);
                 statusEl.textContent = '❌ Помилка публікації';
             }
         }
