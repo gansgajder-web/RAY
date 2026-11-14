@@ -143,7 +143,7 @@
             letter-spacing: 0.5px;
         }
         .balance-amount {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             color: #00ffcc;
             text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
@@ -478,8 +478,8 @@
             buttonRootId: 'ton-connect'
         });
 
-        let balance = 0;       // Поточний натапаний лічильник
-        let savedBalance = 0;  // Зарахований банк у базі
+        let balance = 0;       
+        let savedBalance = 0;  
         let energy = 500;
         let maxEnergy = 500;
         let tapReward = 0.0000000001;
@@ -545,7 +545,7 @@
 
                 if (data) {
                     savedBalance = parseFloat(data.balance) || 0;
-                    balance = savedBalance; // Завантажуємо в обидва лічильники при вході
+                    balance = savedBalance; 
                     maxEnergy = parseInt(data.max_energy) || 500;
                     tapReward = parseFloat(data.tap_power) || 0.0000000001;
                     energy = maxEnergy;
@@ -568,14 +568,14 @@
                 syncStatusEl.textContent = 'Дані на екрані ✓';
             } catch (err) {
                 console.error(err);
-                syncStatusEl.textContent = 'Готово до праці ✓';
+                syncStatusEl.textContent = 'Помилка завантаження';
             }
         }
 
         async function manualSaveClick() {
             syncStatusEl.textContent = 'Збереження в банк...';
             try {
-                savedBalance = balance; // Переносимо натапане у збережений банк
+                savedBalance = balance; 
                 const cleanBalance = parseFloat(savedBalance.toFixed(10));
                 const cleanPower = parseFloat(tapReward.toFixed(10));
 
@@ -586,8 +586,7 @@
                         username: userName,
                         balance: cleanBalance,
                         max_energy: maxEnergy,
-                        tap_power: cleanPower,
-                        updated_at: new Date().toISOString()
+                        tap_power: cleanPower
                     }, { onConflict: 'user_id' });
 
                 if (error) throw error;
@@ -597,9 +596,9 @@
                 if (tg.HapticFeedback) {
                     tg.HapticFeedback.notificationOccurred('success');
                 }
-                alert('Прогрес успішно зафіксовано в банку та в базі!');
             } catch (err) {
-                syncStatusEl.textContent = 'Помилка збереження';
+                console.error(err);
+                syncStatusEl.textContent = 'Помилка: ' + (err.message || 'невідома');
             }
         }
 
