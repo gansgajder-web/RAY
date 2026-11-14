@@ -527,8 +527,8 @@
             <div class="status-text" style="color:#94a3b8;">Рейтинг оновлюється в реальному часі</div>
         </div>
 
-        <!-- НАВІГАЦІЯ (ПЕРША КНОПКА — ПОСИЛАННЯ НА INDEX.HTML) -->
-        <div class="nav-boxes">
+        <!-- ДИНАМІЧНА НАВІГАЦІЯ ЗНИЗУ -->
+        <div class="nav-boxes" id="nav-container">
             <button class="nav-box" onclick="goToHome()">🏠 Головна</button>
             <button class="nav-box" id="tab-boost" onclick="switchTab('boost')">⚡ Буст</button>
             <button class="nav-box" id="tab-profile" onclick="switchTab('profile')">👤 Профіль</button>
@@ -595,6 +595,7 @@
         const energyFillEl = document.getElementById('energy-fill');
         const syncStatusEl = document.getElementById('sync-status');
         const coinEl = document.getElementById('tap-coin');
+        const navContainer = document.getElementById('nav-container');
 
         updateUI();
 
@@ -642,7 +643,24 @@
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-box').forEach(el => el.classList.remove('active-tab'));
 
-            if (tab === 'boost') {
+            // На внутрішніх вкладках перша кнопка завжди веде назад на Майнінг
+            navContainer.innerHTML = `
+                <button class="nav-box" onclick="switchTab('mine')">🪙 Майнінг</button>
+                <button class="nav-box" id="tab-boost" onclick="switchTab('boost')">⚡ Буст</button>
+                <button class="nav-box" id="tab-profile" onclick="switchTab('profile')">👤 Профіль</button>
+                <button class="nav-box" id="tab-top" onclick="switchTab('top')">🏆 Топ</button>
+            `;
+
+            if (tab === 'mine') {
+                document.getElementById('view-mine').classList.add('active');
+                // На головному екрані майнінгу перша кнопка веде на index.html
+                navContainer.innerHTML = `
+                    <button class="nav-box" onclick="goToHome()">🏠 Головна</button>
+                    <button class="nav-box" id="tab-boost" onclick="switchTab('boost')">⚡ Буст</button>
+                    <button class="nav-box" id="tab-profile" onclick="switchTab('profile')">👤 Профіль</button>
+                    <button class="nav-box" id="tab-top" onclick="switchTab('top')">🏆 Топ</button>
+                `;
+            } else if (tab === 'boost') {
                 document.getElementById('view-boost').classList.add('active');
                 document.getElementById('tab-boost').classList.add('active-tab');
             } else if (tab === 'profile') {
@@ -656,8 +674,7 @@
             }
         }
 
-        // Перехід на головну (index.html) зі збереженням балансу
-        async function goToHome() {
+        function goToHome() {
             if (balance > 0) {
                 savedBalance += balance;
                 balance = 0;
@@ -666,7 +683,7 @@
             saveLocal();
             if (supabaseClient) {
                 try {
-                    await supabaseClient.from('ray_mining').upsert({
+                    supabaseClient.from('ray_mining').upsert({
                         user_id: userId,
                         username: userName,
                         balance: parseFloat(savedBalance.toFixed(10)),
