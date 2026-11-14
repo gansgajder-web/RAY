@@ -3,629 +3,687 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAY</title>
+    <title>RAY Mining | TON Network</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         body {
-            background-color: #0b0b10;
+            background-color: #0b0f19;
             color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
+            align-items: center;
             min-height: 100vh;
-            justify-content: space-between;
-            padding: 12px;
+            overflow-x: hidden;
+            padding: 15px 15px 25px 15px;
         }
-        .top-app-bar {
+
+        @keyframes neonPulse {
+            0% {
+                border-color: #00d2ff;
+                box-shadow: 0 0 10px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.2);
+            }
+            50% {
+                border-color: #9d00ff;
+                box-shadow: 0 0 25px rgba(157, 0, 255, 0.6), inset 0 0 15px rgba(157, 0, 255, 0.3);
+            }
+            100% {
+                border-color: #00d2ff;
+                box-shadow: 0 0 10px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.2);
+            }
+        }
+
+        @keyframes btnNeonGlow {
+            0% {
+                background: linear-gradient(135deg, #0088cc, #00d2ff);
+                box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+            }
+            50% {
+                background: linear-gradient(135deg, #7928ca, #ff007f);
+                box-shadow: 0 4px 25px rgba(255, 0, 127, 0.6);
+            }
+            100% {
+                background: linear-gradient(135deg, #0088cc, #00d2ff);
+                box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+            }
+        }
+
+        .top-bar {
+            width: 100%;
+            max-width: 380px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            padding: 0 4px;
-            color: #e5e7eb;
-        }
-        .user-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 14px;
-        }
-        .user-tag {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(147, 51, 234, 0.35);
-            border-radius: 24px;
-            padding: 4px 12px 4px 4px;
-            display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
+            margin-bottom: 15px;
         }
-        .avatar-ph {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #4a1d96;
+
+        .tg-profile {
+            background: rgba(18, 24, 38, 0.85);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            padding: 4px 10px 4px 5px;
+            border-radius: 25px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 13px;
+            gap: 6px;
+            animation: neonPulse 4s infinite;
+            max-width: 145px;
+            flex-shrink: 0;
         }
-        .wallet-badge {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(147, 51, 234, 0.35);
-            border-radius: 20px;
-            padding: 6px 12px;
-            font-size: 13px;
-            color: #d1d5db;
-            cursor: pointer;
-        }
-        .screen-content {
-            display: none;
-            flex-direction: column;
-            flex-grow: 1;
-            justify-content: center;
-        }
-        .screen-content.active {
-            display: flex;
-        }
-        .main-card {
-            background: linear-gradient(160deg, #13101f, #1b162c);
-            border: 1px solid rgba(52, 211, 153, 0.4);
-            border-radius: 24px;
-            padding: 20px 16px;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(52, 211, 153, 0.1);
-        }
-        .mining-title {
-            font-size: 11px;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 8px;
-        }
-        .balance-amount {
-            font-size: 26px;
-            font-weight: bold;
-            color: #34d399;
-            margin-bottom: 16px;
-            text-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
-            word-break: break-all;
-            font-family: monospace;
-        }
-        .coin-container {
-            position: relative;
-            width: 130px;
-            height: 130px;
-            margin: 0 auto 16px auto;
-            background: radial-gradient(circle, rgba(147, 51, 234, 0.3) 0%, rgba(18, 16, 31, 0) 70%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        .tg-avatar {
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            border: 2px solid rgba(147, 51, 234, 0.7);
-            box-shadow: 0 0 25px rgba(147, 51, 234, 0.4);
-            cursor: pointer;
-            user-select: none;
-            transition: transform 0.1s ease;
+            object-fit: cover;
+            border: 1px solid #00d2ff;
+            background-color: #1e293b;
         }
-        .coin-container:active {
-            transform: scale(0.94);
-        }
-        .coin-arrow {
-            font-size: 32px;
+        .tg-name {
             color: #ffffff;
-            line-height: 1;
-            margin-bottom: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .coin-text {
-            font-size: 14px;
-            color: #38bdf8;
-            font-weight: bold;
+
+        #ton-connect {
+            flex-shrink: 0;
+        }
+        #ton-connect > div {
+            transform: scale(0.85);
+            transform-origin: right center;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(18, 24, 38, 0.85);
+            padding: 22px 18px;
+            border-radius: 20px;
+            border: 2px solid #00d2ff;
+            animation: neonPulse 5s infinite;
+            max-width: 380px;
+            width: 100%;
+            position: relative;
+        }
+
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        .balance-box {
+            margin-bottom: 15px;
+        }
+        .balance-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
             letter-spacing: 1px;
         }
+        .balance-amount {
+            font-size: 32px;
+            font-weight: 800;
+            color: #00ffcc;
+            text-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
+            margin-top: 4px;
+        }
+
+        .coin-wrapper {
+            position: relative;
+            width: 175px;
+            height: 175px;
+            margin: 10px auto 18px auto;
+            border-radius: 50%;
+            padding: 5px;
+            border: 3px solid #00d2ff;
+            animation: neonPulse 3s infinite;
+            cursor: pointer;
+            transition: transform 0.08s ease;
+        }
+        .coin-wrapper:active {
+            transform: scale(0.93);
+        }
+        .coin-wrapper img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .floating-plus {
+            position: absolute;
+            color: #00ffcc;
+            font-size: 18px;
+            font-weight: bold;
+            pointer-events: none;
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.8);
+            animation: floatUp 0.9s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-70px) scale(1.2); }
+        }
+
         .energy-section {
-            margin-bottom: 14px;
-            text-align: left;
-            padding: 0 6px;
+            margin-bottom: 12px;
         }
         .energy-header {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
-            color: #9ca3af;
+            font-size: 13px;
+            color: #94a3b8;
             margin-bottom: 6px;
-        }
-        .energy-header span:last-child {
-            color: #fff;
-            font-weight: 500;
+            font-weight: 600;
         }
         .energy-bar-bg {
             width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 4px;
+            height: 12px;
+            background: rgba(11, 15, 25, 0.8);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 210, 255, 0.4);
             overflow: hidden;
         }
         .energy-bar-fill {
-            width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, #9333ea, #34d399);
-            border-radius: 4px;
-        }
-        .cloud-status {
-            font-size: 12px;
-            color: #34d399;
-            margin-bottom: 14px;
-            font-weight: 500;
-        }
-        .save-btn {
-            background: linear-gradient(135deg, #0d9488, #0f766e);
-            color: #ffffff;
-            border: none;
             width: 100%;
-            padding: 14px;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: bold;
+            background: linear-gradient(90deg, #00d2ff, #9d00ff);
+            transition: width 0.2s ease;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: #00ffcc;
+            min-height: 16px;
+            margin-bottom: 12px;
+        }
+
+        .save-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00ffcc, #0088cc);
+            border: none;
+            color: #0b0f19;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4);
+            transition: transform 0.1s ease;
         }
         .save-btn:active {
-            opacity: 0.85;
+            transform: scale(0.96);
         }
-        .section-card {
-            background: linear-gradient(145deg, #12101f, #1b162c);
-            border: 1px solid rgba(147, 51, 234, 0.4);
-            border-radius: 24px;
-            padding: 20px;
-            text-align: left;
-        }
+
         .section-title {
-            font-size: 17px;
-            font-weight: bold;
-            color: #fff;
-            margin-bottom: 14px;
-            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #00d2ff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
         }
-        .profile-info-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .profile-info-row:last-child {
-            border-bottom: none;
-        }
-        .profile-label {
-            color: #9ca3af;
-        }
-        .profile-val {
-            color: #fff;
-            font-weight: 500;
-            text-align: right;
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .boost-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(147, 51, 234, 0.2);
-            border-radius: 16px;
+        .boost-card {
+            background: rgba(11, 15, 25, 0.75);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 14px;
             padding: 14px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            text-align: left;
+            animation: neonPulse 4s infinite;
         }
-        .boost-info h4 {
+        .boost-info h3 {
             font-size: 14px;
-            color: #fff;
+            color: #ffffff;
             margin-bottom: 4px;
         }
         .boost-info p {
-            font-size: 12px;
-            color: #9ca3af;
-        }
-        .boost-btn {
-            background: #9333ea;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .boost-btn:active {
-            opacity: 0.8;
-        }
-        .nav-bar {
-            display: flex;
-            justify-content: space-around;
-            background: rgba(27, 22, 44, 0.95);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            padding: 10px 0;
-            border-radius: 16px;
-            margin-top: 14px;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             font-size: 11px;
-            color: #9ca3af;
-            text-decoration: none;
-            gap: 4px;
-            cursor: pointer;
-            background: transparent;
+            color: #94a3b8;
+        }
+        .buy-ton-btn {
+            animation: btnNeonGlow 5s infinite;
             border: none;
-            flex: 1;
-        }
-        .nav-item.active {
-            color: #34d399;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
-            z-index: 1000;
-        }
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .modal-box {
-            background: #1b162c;
-            border: 1px solid rgba(147, 51, 234, 0.5);
-            padding: 24px 20px;
+            color: #ffffff;
+            padding: 8px 14px;
             border-radius: 20px;
-            width: 85%;
-            max-width: 300px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
-        .modal-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-        .modal-text {
-            font-size: 14px;
-            color: #d1d5db;
-            margin-bottom: 20px;
-            line-height: 1.4;
-        }
-        .modal-btn {
-            background: transparent;
-            color: #38bdf8;
-            border: none;
-            font-size: 15px;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 700;
             cursor: pointer;
-            width: 100%;
-            text-align: right;
-            padding-right: 10px;
+            white-space: nowrap;
+        }
+        .buy-ton-btn:active {
+            transform: scale(0.95);
+        }
+
+        .profile-list {
+            background: rgba(11, 15, 25, 0.75);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 14px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .profile-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+        }
+        .profile-row:last-child {
+            border-bottom: none;
+        }
+        .profile-key {
+            color: #94a3b8;
+        }
+        .profile-val {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .nav-boxes {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            border-top: 1px solid rgba(0, 210, 255, 0.2);
+            padding-top: 15px;
+            margin-top: 10px;
+        }
+        .nav-box {
+            flex: 1;
+            background: rgba(11, 15, 25, 0.6);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 12px;
+            padding: 11px 4px;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            animation: neonPulse 4s infinite;
+        }
+        .nav-box.active-tab {
+            background: rgba(0, 210, 255, 0.25);
+            border-color: #ff007f;
         }
     </style>
 </head>
 <body>
 
-    <div class="top-app-bar">
-        <span>✕</span>
-        <span>RAY</span>
-        <span>⌄ ⋮</span>
-    </div>
-
-    <div class="user-row">
-        <div class="user-tag">
-            <div class="avatar-ph">👑</div>
-            <span id="headerUsername">@Leslav</span>
+    <div class="top-bar">
+        <div class="tg-profile">
+            <img id="tg-avatar" class="tg-avatar" src="1793244950894.jpg" alt="Avatar">
+            <span id="tg-name" class="tg-name">@Leslav</span>
         </div>
-        <div class="wallet-badge" id="headerWallet" title="Підключений гаманець TON">UQDX...RtWw ⌄</div>
+        <div id="ton-connect"></div>
     </div>
 
-    <!-- Головна вкладка -->
-    <div class="screen-content active" id="screen-home">
-        <div class="main-card">
-            <div class="mining-title">НАМАЙНЕНО RAY</div>
-            <div class="balance-amount" id="balanceDisplay">0.0000000000</div>
-            
-            <div class="coin-container" id="coinButton">
-                <div class="coin-arrow">▲</div>
-                <div class="coin-text">RAY</div>
+    <div class="container">
+        
+        <!-- ВКЛАДКА 1: МАЙНІНГ -->
+        <div id="view-mine" class="view-section active">
+            <div class="balance-box">
+                <div class="balance-label">Намайнено RAY</div>
+                <div class="balance-amount" id="balance">0.0000000000</div>
+            </div>
+
+            <div class="coin-wrapper" id="tap-coin">
+                <img src="1793244950894.jpg" alt="Mine RAY">
             </div>
 
             <div class="energy-section">
                 <div class="energy-header">
                     <span>⚡ Енергія</span>
-                    <span id="energyText">500 / 500</span>
+                    <span id="energy-text">500 / 500</span>
                 </div>
                 <div class="energy-bar-bg">
-                    <div class="energy-bar-fill" id="energyFill"></div>
+                    <div class="energy-bar-fill" id="energy-fill"></div>
                 </div>
             </div>
 
-            <div class="cloud-status">Збережено в хмарі ✓</div>
+            <div class="status-text" id="sync-status">Збережено в хмарі ✓</div>
 
-            <button class="save-btn" id="saveBtn">
-                <span>💾</span> Зберегти прогрес
-            </button>
+            <!-- КНОПКА РУЧНОГО ЗБЕРЕЖЕННЯ -->
+            <button class="save-btn" onclick="manualSaveClick()">💾 Зберегти прогрес</button>
         </div>
-    </div>
 
-    <!-- Вкладка Буст -->
-    <div class="screen-content" id="screen-boost">
-        <div class="section-card">
-            <div class="section-title">Прискорювач майнінгу</div>
-            <div class="boost-item">
+        <!-- ВКЛАДКА 2: БУСТИ -->
+        <div id="view-boost" class="view-section">
+            <div class="section-title">⚡ Магазин посилень</div>
+            
+            <div class="boost-card">
                 <div class="boost-info">
-                    <h4>Турбо-режим x2</h4>
-                    <p>Подвоює швидкість майнінгу</p>
+                    <h3>🔋 +500 Енергії</h3>
+                    <p>Збільшує запас енергії</p>
                 </div>
-                <button class="boost-btn" id="buyBoostBtn">Купити</button>
+                <button class="buy-ton-btn" onclick="buyUpgrade('energy')">0.01 TON</button>
+            </div>
+
+            <div class="boost-card">
+                <div class="boost-info">
+                    <h3>🚀 Швидкість тапу</h3>
+                    <p>Збільшує потужність кліку</p>
+                </div>
+                <button class="buy-ton-btn" onclick="buyUpgrade('speed')">0.01 TON</button>
+            </div>
+
+            <div class="boost-card">
+                <div class="boost-info">
+                    <h3>⚡ Повний заряд</h3>
+                    <p>Миттєво відновлює всю енергію</p>
+                </div>
+                <button class="buy-ton-btn" onclick="buyUpgrade('refill')">0.01 TON</button>
+            </div>
+
+            <div class="status-text" id="boost-status" style="color:#94a3b8;">Оплата через підключений гаманець TON</div>
+        </div>
+
+        <!-- ВКЛАДКА 3: ПРОФІЛЬ -->
+        <div id="view-profile" class="view-section">
+            <div class="section-title">👤 Профіль майнера</div>
+            <div class="profile-list">
+                <div class="profile-row">
+                    <span class="profile-key">Нікнейм:</span>
+                    <span class="profile-val" id="prof-nick">@Leslav</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-key">Telegram ID:</span>
+                    <span class="profile-val" id="prof-id">409059054</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-key">Дата реєстрації:</span>
+                    <span class="profile-val" id="prof-date">13.11.2026</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-key">Потужність кліку:</span>
+                    <span class="profile-val" id="prof-power">0.0000000001 RAY</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-key">Макс. енергія:</span>
+                    <span class="profile-val" id="prof-max-energy">500</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-key">Статус гаманця:</span>
+                    <span class="profile-val" id="prof-wallet">Підключено ✓</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Вкладка Профіль -->
-    <div class="screen-content" id="screen-profile">
-        <div class="section-card">
-            <div class="section-title">Профіль користувача</div>
-            <div class="profile-info-row">
-                <span class="profile-label">Акаунт Telegram:</span>
-                <span class="profile-val" id="profileUser">@Leslav</span>
+        <!-- НАВІГАЦІЯ -->
+        <div class="nav-boxes">
+            <div id="nav-left-btn" style="flex: 1; display: flex;">
+                <button class="nav-box" onclick="goToHome()">🏠 Головна</button>
             </div>
-            <div class="profile-info-row">
-                <span class="profile-label">Гаманець (TON):</span>
-                <span class="profile-val" id="profileWallet">UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw</span>
-            </div>
-            <div class="profile-info-row">
-                <span class="profile-label">Швидкість майнінгу:</span>
-                <span class="profile-val" id="profileSpeed">0.0000000001/с</span>
-            </div>
-            <div class="profile-info-row">
-                <span class="profile-label">Статус:</span>
-                <span class="profile-val" style="color: #f39c12;">Засновник 👑</span>
-            </div>
+            <button class="nav-box" id="tab-boost" onclick="switchTab('boost')">⚡ Буст</button>
+            <button class="nav-box" id="tab-profile" onclick="switchTab('profile')">👤 Профіль</button>
         </div>
-    </div>
 
-    <!-- Навігація внизу -->
-    <div class="nav-bar">
-        <button class="nav-item active" onclick="switchTab('home', this)">
-            <span>🔥</span>Головна
-        </button>
-        <button class="nav-item" onclick="switchTab('boost', this)">
-            <span>⚡</span>Буст
-        </button>
-        <button class="nav-item" onclick="switchTab('profile', this)">
-            <span>👤</span>Профіль
-        </button>
-    </div>
-
-    <!-- Попап -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-box">
-            <div class="modal-title">RAY</div>
-            <div class="modal-text" id="modalText">Прогрес успішно збережено в хмарі!</div>
-            <button class="modal-btn" id="modalClose">Гаразд</button>
-        </div>
     </div>
 
     <script>
-        let rayData = {
-            balance: 0.0000000000,
-            speed: 0.0000000001,
-            energy: 500,
-            maxEnergy: 500,
-            username: "@Leslav",
-            wallet: "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw",
-            boosted: false,
-            lastTime: Date.now()
-        };
+        const SUPABASE_URL = 'https://ordlwuikqsvgyybuqtj.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_rg7Z1F-ws8Y9zmUwDLXDVA_zpH6K8pw';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const balanceDisplay = document.getElementById('balanceDisplay');
-        const coinButton = document.getElementById('coinButton');
-        const saveBtn = document.getElementById('saveBtn');
-        const buyBoostBtn = document.getElementById('buyBoostBtn');
-        const energyText = document.getElementById('energyText');
-        const energyFill = document.getElementById('energyFill');
-        
-        const headerUsername = document.getElementById('headerUsername');
-        const headerWallet = document.getElementById('headerWallet');
-        const profileUser = document.getElementById('profileUser');
-        const profileWallet = document.getElementById('profileWallet');
-        const profileSpeed = document.getElementById('profileSpeed');
+        const RECEIVER_WALLET = 'UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw';
 
-        const modalOverlay = document.getElementById('modalOverlay');
-        const modalText = document.getElementById('modalText');
-        const modalClose = document.getElementById('modalClose');
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
 
-        // Підтягуємо реальні дані з Telegram WebApp, якщо доступно
-        function initTelegramUser() {
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
-                const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-                if (tgUser) {
-                    if (tgUser.username) {
-                        rayData.username = "@" + tgUser.username;
-                    } else if (tgUser.first_name) {
-                        rayData.username = tgUser.first_name;
-                    }
+        const user = tg.initDataUnsafe?.user;
+        const userId = user ? String(user.id) : '409059054';
+        const userName = user ? (user.username ? `@${user.username}` : user.first_name) : '@Leslav';
+
+        document.getElementById('tg-name').textContent = userName;
+        if (user && user.photo_url) {
+            document.getElementById('tg-avatar').src = user.photo_url;
+        }
+
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: 'https://gansgajder-web.github.io/RAY/tonconnect-manifest.json',
+            buttonRootId: 'ton-connect'
+        });
+
+        let balance = 0;
+        let energy = 500;
+        let maxEnergy = 500;
+        let tapReward = 0.0000000001;
+        let regDate = '13.11.2026';
+        let saveTimeout = null;
+
+        const balanceEl = document.getElementById('balance');
+        const energyTextEl = document.getElementById('energy-text');
+        const energyFillEl = document.getElementById('energy-fill');
+        const syncStatusEl = document.getElementById('sync-status');
+        const coinEl = document.getElementById('tap-coin');
+        const navLeftBtnEl = document.getElementById('nav-left-btn');
+
+        let audioCtx = null;
+        function playClickSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } catch(e) {}
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-box').forEach(el => el.classList.remove('active-tab'));
+
+            if (tab === 'mine') {
+                document.getElementById('view-mine').classList.add('active');
+                navLeftBtnEl.innerHTML = `<button class="nav-box" onclick="goToHome()">🏠 Головна</button>`;
+            } else {
+                navLeftBtnEl.innerHTML = `<button class="nav-box" onclick="switchTab('mine')">🪙 Майнінг</button>`;
+                
+                if (tab === 'boost') {
+                    document.getElementById('view-boost').classList.add('active');
+                    document.getElementById('tab-boost').classList.add('active-tab');
+                } else if (tab === 'profile') {
+                    updateProfileUI();
+                    document.getElementById('view-profile').classList.add('active');
+                    document.getElementById('tab-profile').classList.add('active-tab');
                 }
             }
-            headerUsername.innerText = rayData.username;
-            profileUser.innerText = rayData.username;
-            headerWallet.innerText = rayData.wallet.substring(0, 6) + '... ' + '⌄';
-            profileWallet.innerText = rayData.wallet;
         }
 
-        function updateDisplay() {
-            balanceDisplay.innerText = rayData.balance.toFixed(10);
-            energyText.innerText = `${Math.floor(rayData.energy)} / ${rayData.maxEnergy}`;
-            const percent = (rayData.energy / rayData.maxEnergy) * 100;
-            energyFill.style.width = percent + '%';
-            profileSpeed.innerText = rayData.speed.toFixed(10) + '/с';
+        async function loadUserData() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('ray_mining')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                if (data) {
+                    balance = parseFloat(data.balance) || 0;
+                    maxEnergy = parseInt(data.max_energy) || 500;
+                    tapReward = parseFloat(data.tap_power) || 0.0000000001;
+                    energy = maxEnergy;
+                    if (data.created_at) {
+                        regDate = new Date(data.created_at).toLocaleDateString('uk-UA');
+                    }
+                } else {
+                    await supabaseClient.from('ray_mining').insert([{
+                        user_id: userId,
+                        username: userName,
+                        balance: 0,
+                        max_energy: 500,
+                        tap_power: 0.0000000001
+                    }]);
+                    balance = 0;
+                }
+                updateUI();
+                updateProfileUI();
+                syncStatusEl.textContent = 'Збережено в хмарі ✓';
+            } catch (err) {
+                console.error(err);
+                syncStatusEl.textContent = 'Готово до праці ✓';
+            }
         }
 
-        function showPopup(text) {
-            modalText.innerText = text;
-            modalOverlay.classList.add('show');
+        async function saveImmediately() {
+            syncStatusEl.textContent = 'Збереження...';
+            try {
+                await supabaseClient
+                    .from('ray_mining')
+                    .upsert({
+                        user_id: userId,
+                        username: userName,
+                        balance: balance,
+                        max_energy: maxEnergy,
+                        tap_power: tapReward,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id' });
+                syncStatusEl.textContent = 'Збережено в хмарі ✓';
+            } catch (err) {
+                syncStatusEl.textContent = 'Помилка збереження';
+            }
         }
 
-        modalClose.addEventListener('click', () => {
-            modalOverlay.classList.remove('show');
+        async function manualSaveClick() {
+            await saveImmediately();
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+            alert('Прогрес успішно збережено в хмарі!');
+        }
+
+        async function goToHome() {
+            await saveImmediately();
+            window.location.href = 'index.html';
+        }
+
+        function scheduleSave() {
+            syncStatusEl.textContent = 'Збереження...';
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveImmediately, 1000);
+        }
+
+        function updateUI() {
+            balanceEl.textContent = balance.toFixed(10);
+            energyTextEl.textContent = `${energy} / ${maxEnergy}`;
+            energyFillEl.style.width = `${Math.min(100, (energy / maxEnergy) * 100)}%`;
+        }
+
+        function updateProfileUI() {
+            document.getElementById('prof-nick').textContent = userName;
+            document.getElementById('prof-id').textContent = userId;
+            document.getElementById('prof-date').textContent = regDate;
+            document.getElementById('prof-power').textContent = `${tapReward.toFixed(10)} RAY`;
+            document.getElementById('prof-max-energy').textContent = maxEnergy;
+            
+            const wallet = tonConnectUI.wallet;
+            document.getElementById('prof-wallet').textContent = wallet ? 'Підключено ✓' : 'Не підключено';
+        }
+
+        async function buyUpgrade(type) {
+            const statusEl = document.getElementById('boost-status');
+            if (!tonConnectUI.connected) {
+                statusEl.textContent = '⚠️ Спочатку підключіть гаманець угорі!';
+                tonConnectUI.openModal();
+                return;
+            }
+
+            const transaction = {
+                validUntil: Math.floor(Date.now() / 1000) + 300,
+                messages: [
+                    {
+                        address: RECEIVER_WALLET,
+                        amount: '10000000'
+                    }
+                ]
+            };
+
+            try {
+                statusEl.textContent = 'Підтвердіть транзакцію в гаманці...';
+                await tonConnectUI.sendTransaction(transaction);
+
+                if (type === 'energy') {
+                    maxEnergy += 500;
+                    energy = maxEnergy;
+                    statusEl.textContent = '✅ Енергію збільшено на +500!';
+                } else if (type === 'speed') {
+                    tapReward += 0.0000000005;
+                    statusEl.textContent = '✅ Швидкість тапу збільшено!';
+                } else if (type === 'refill') {
+                    energy = maxEnergy;
+                    statusEl.textContent = '✅ Енергію повністю відновлено!';
+                }
+
+                updateUI();
+                updateProfileUI();
+                await saveImmediately();
+                switchTab('mine');
+            } catch (e) {
+                statusEl.textContent = '❌ Оплату скасовано';
+            }
+        }
+
+        coinEl.addEventListener('pointerdown', (e) => {
+            if (energy <= 0) return;
+
+            balance += tapReward;
+            energy -= 1;
+            updateUI();
+            scheduleSave();
+            playClickSound();
+
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+
+            const plus = document.createElement('div');
+            plus.className = 'floating-plus';
+            plus.textContent = `+${tapReward.toFixed(10)}`;
+            const rect = coinEl.getBoundingClientRect();
+            plus.style.left = `${e.clientX - rect.left - 15}px`;
+            plus.style.top = `${e.clientY - rect.top - 15}px`;
+            coinEl.appendChild(plus);
+
+            setTimeout(() => plus.remove(), 900);
         });
 
-        function switchTab(tabName, element) {
-            document.querySelectorAll('.screen-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-            document.getElementById('screen-' + tabName).classList.add('active');
-            element.classList.add('active');
-            updateDisplay();
-        }
-
-        function loadRayData() {
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.CloudStorage) {
-                window.Telegram.WebApp.CloudStorage.getItem('ray_cloud_save', (err, value) => {
-                    if (!err && value) {
-                        try {
-                            const parsed = JSON.parse(value);
-                            rayData.balance = parsed.balance ?? 0.0000000000;
-                            rayData.speed = parsed.speed ?? 0.0000000001;
-                            rayData.energy = parsed.energy ?? 500;
-                            rayData.boosted = parsed.boosted ?? false;
-                            if (parsed.wallet) rayData.wallet = parsed.wallet;
-                            if (parsed.username) rayData.username = parsed.username;
-
-                            if (parsed.lastTime) {
-                                const secondsPassed = (Date.now() - parsed.lastTime) / 1000;
-                                if (secondsPassed > 0) {
-                                    rayData.balance += secondsPassed * rayData.speed;
-                                }
-                            }
-                            initTelegramUser();
-                            updateDisplay();
-                        } catch (e) {
-                            fallbackLoad();
-                        }
-                    } else {
-                        fallbackLoad();
-                    }
-                });
-            } else {
-                fallbackLoad();
-            }
-        }
-
-        function fallbackLoad() {
-            const local = localStorage.getItem('ray_cloud_save');
-            if (local) {
-                try {
-                    const parsed = JSON.parse(local);
-                    rayData.balance = parsed.balance ?? rayData.balance;
-                    rayData.speed = parsed.speed ?? rayData.speed;
-                    rayData.energy = parsed.energy ?? rayData.energy;
-                    rayData.boosted = parsed.boosted ?? false;
-                    if (parsed.wallet) rayData.wallet = parsed.wallet;
-                } catch (e) {}
-            }
-            initTelegramUser();
-            updateDisplay();
-        }
-
-        function saveRayData(showMsg = true) {
-            rayData.lastTime = Date.now();
-            const payload = JSON.stringify(rayData);
-
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.CloudStorage) {
-                window.Telegram.WebApp.CloudStorage.setItem('ray_cloud_save', payload, (err, saved) => {
-                    if (!err && saved) {
-                        if (showMsg) showPopup("Прогрес успішно збережено в хмарі!");
-                    } else {
-                        localStorage.setItem('ray_cloud_save', payload);
-                        if (showMsg) showPopup("Прогрес успішно збережено в хмарі!");
-                    }
-                });
-            } else {
-                localStorage.setItem('ray_cloud_save', payload);
-                if (showMsg) showPopup("Прогрес успішно збережено в хмарі!");
-            }
-        }
-
-        // Пасивний майнінг та відновлення енергії
         setInterval(() => {
-            rayData.balance += rayData.speed;
-            if (rayData.energy < rayData.maxEnergy) {
-                rayData.energy = Math.min(rayData.maxEnergy, rayData.energy + 1);
+            if (energy < maxEnergy) {
+                energy = Math.min(maxEnergy, energy + 2);
+                updateUI();
             }
-            updateDisplay();
         }, 1000);
 
-        // Автозбереження кожні 15 секунд
-        setInterval(() => {
-            saveRayData(false);
-        }, 15000);
-
-        // Клік по монеті
-        coinButton.addEventListener('click', () => {
-            if (rayData.energy >= 1) {
-                rayData.balance += 0.0000000005;
-                rayData.energy -= 1;
-                updateDisplay();
-            }
-        });
-
-        // Покупка буста
-        buyBoostBtn.addEventListener('click', () => {
-            if (!rayData.boosted) {
-                rayData.speed *= 2;
-                rayData.boosted = true;
-                buyBoostBtn.innerText = "Активно";
-                buyBoostBtn.style.background = "#0d9488";
-                showPopup("Турбо-режим успішно активовано! Швидкість подвоєно.");
-                updateDisplay();
-                saveRayData(false);
-            } else {
-                showPopup("Турбо-режим вже активовано!");
-            }
-        });
-
-        // Кнопка збереження прогресу
-        saveBtn.addEventListener('click', () => {
-            saveRayData(true);
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.ready();
-                window.Telegram.WebApp.expand();
-            }
-            loadRayData();
-        });
-
-        window.addEventListener('beforeunload', () => {
-            saveRayData(false);
-        });
+        loadUserData();
     </script>
+
 </body>
 </html>
