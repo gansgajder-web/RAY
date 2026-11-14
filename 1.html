@@ -478,8 +478,9 @@
             buttonRootId: 'ton-connect'
         });
 
-        let balance = 0;       
-        let savedBalance = 0;  
+        // МИТТЄВЕ завантаження з пам'яті телефону, щоб нулів на екрані не було ніколи!
+        let savedBalance = parseFloat(localStorage.getItem('ray_saved_balance')) || 0;
+        let balance = parseFloat(localStorage.getItem('ray_balance')) || savedBalance;
         let energy = 500;
         let maxEnergy = 500;
         let tapReward = 0.0000000001;
@@ -492,6 +493,8 @@
         const syncStatusEl = document.getElementById('sync-status');
         const coinEl = document.getElementById('tap-coin');
         const navLeftBtnEl = document.getElementById('nav-left-btn');
+
+        updateUI();
 
         let audioCtx = null;
         function playClickSound() {
@@ -536,7 +539,7 @@
 
         async function loadUserData() {
             try {
-                syncStatusEl.textContent = 'Завантаження з бази...';
+                syncStatusEl.textContent = 'Синхронізація з хмарою...';
                 const { data, error } = await supabaseClient
                     .from('ray_mining')
                     .select('*')
@@ -544,66 +547,85 @@
                     .maybeSingle();
 
                 if (data) {
-                    savedBalance = parseFloat(data.balance) || 0;
-                    balance = savedBalance; 
+                    const cloudBalance = parseFloat(data.balance) || 0;
+                    if (cloudBalance >= savedBalance) {
+                        savedBalance = cloudBalance;
+                        balance = Math.max(balance, savedBalance);
+                    }
                     maxEnergy = parseInt(data.max_energy) || 500;
                     tapReward = parseFloat(data.tap_power) || 0.0000000001;
                     energy = maxEnergy;
                     if (data.created_at) {
                         regDate = new Date(data.created_at).toLocaleDateString('uk-UA');
                     }
+                    saveLocal();
+                    updateUI();
+                    syncStatusEl.textContent = 'Збережено в хмарі ✓';
                 } else {
                     await supabaseClient.from('ray_mining').insert([{
                         user_id: userId,
-                        username: userName,
-                        balance: 0,
-                        max_energy: 500,
-                        tap_power: 0.0000000001
+                        balance: savedBalance,
+                        max_energy: maxEnergy,
+                        tap_power: tapReward
                     }]);
-                    balance = 0;
-                    savedBalance = 0;
+                    syncStatusEl.textContent = 'Готово до праці ✓';
                 }
-                updateUI();
                 updateProfileUI();
-                syncStatusEl.textContent = 'Дані на екрані ✓';
             } catch (err) {
-                console.error(err);
-                syncStatusEl.textContent = 'Помилка завантаження';
+                console.warn('Офлайн режим (хмара недоступна):', err.message);
+                syncStatusEl.textContent = 'Дані захищено на пристрої ✓';
             }
+        }
+
+        function saveLocal() {
+            localStorage.setItem('ray_balance', balance);
+            localStorage.setItem('ray_saved_balance', savedBalance);
         }
 
         async function manualSaveClick() {
             syncStatusEl.textContent = 'Збереження в банк...';
-            try {
-                savedBalance = balance; 
-                const cleanBalance = parseFloat(savedBalance.toFixed(10));
-                const cleanPower = parseFloat(tapReward.toFixed(10));
+            savedBalance = balance;
+            saveLocal();
 
+            try {
                 const { error } = await supabaseClient
                     .from('ray_mining')
                     .upsert({
                         user_id: userId,
-                        username: userName,
-                        balance: cleanBalance,
+                        balance: parseFloat(savedBalance.toFixed(10)),
                         max_energy: maxEnergy,
-                        tap_power: cleanPower
+                        tap_power: parseFloat(tapReward.toFixed(10))
                     }, { onConflict: 'user_id' });
 
                 if (error) throw error;
 
-                updateUI();
                 syncStatusEl.textContent = 'Збережено в банку ✓';
                 if (tg.HapticFeedback) {
                     tg.HapticFeedback.notificationOccurred('success');
                 }
+                alert('Прогрес надійно зафіксовано в банку та в хмарі!');
             } catch (err) {
-                console.error(err);
-                syncStatusEl.textContent = 'Помилка: ' + (err.message || 'невідома');
+                console.warn('Помилка хмари:', err.message);
+                syncStatusEl.textContent = 'Збережено на пристрої ✓';
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+                alert('Прогрес надійно збережено на пристрої!');
             }
+            updateUI();
         }
 
         async function goToHome() {
-            await manualSaveClick();
+            savedBalance = balance;
+            saveLocal();
+            try {
+                await supabaseClient.from('ray_mining').upsert({
+                    user_id: userId,
+                    balance: parseFloat(savedBalance.toFixed(10)),
+                    max_energy: maxEnergy,
+                    tap_power: parseFloat(tapReward.toFixed(10))
+                }, { onConflict: 'user_id' });
+            } catch(e) {}
             window.location.href = 'index.html';
         }
 
@@ -659,6 +681,8 @@
                     statusEl.textContent = '✅ Енергію повністю відновлено!';
                 }
 
+                savedBalance = balance;
+                saveLocal();
                 updateUI();
                 updateProfileUI();
                 await manualSaveClick();
@@ -672,6 +696,7 @@
             if (energy <= 0) return;
 
             balance += tapReward;
+            saveLocal();
             updateUI();
             playClickSound();
 
