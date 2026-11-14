@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAY Journal | Живий журнал</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #0b0f19;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 15px 15px 25px 15px;
+        }
+
+        @keyframes neonPulse {
+            0% {
+                border-color: #00d2ff;
+                box-shadow: 0 0 10px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.2);
+            }
+            50% {
+                border-color: #9d00ff;
+                box-shadow: 0 0 25px rgba(157, 0, 255, 0.6), inset 0 0 15px rgba(157, 0, 255, 0.3);
+            }
+            100% {
+                border-color: #00d2ff;
+                box-shadow: 0 0 10px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.2);
+            }
+        }
+
+        .top-bar {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tg-profile {
+            background: rgba(18, 24, 38, 0.85);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            padding: 4px 10px 4px 5px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: neonPulse 4s infinite;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .tg-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #00d2ff;
+            background-color: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #00ffcc;
+        }
+        .tg-name {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(18, 24, 38, 0.85);
+            padding: 20px 18px;
+            border-radius: 20px;
+            border: 2px solid #00d2ff;
+            animation: neonPulse 5s infinite;
+            max-width: 380px;
+            width: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00d2ff;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .post-form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(11, 15, 25, 0.6);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(18, 24, 38, 0.9);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 8px;
+            color: #ffffff;
+            padding: 8px;
+            font-size: 12px;
+            resize: none;
+            height: 60px;
+            font-family: inherit;
+            outline: none;
+        }
+        textarea:focus {
+            border-color: #00ffcc;
+        }
+
+        .publish-btn {
+            background: linear-gradient(135deg, #00ffcc, #0088cc);
+            border: none;
+            color: #0b0f19;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.3);
+            transition: transform 0.1s ease;
+        }
+        .publish-btn:active {
+            transform: scale(0.96);
+        }
+
+        .journal-feed {
+            max-height: 280px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+            padding-right: 2px;
+        }
+
+        .journal-card {
+            background: rgba(11, 15, 25, 0.75);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .journal-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #00d2ff;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .journal-time {
+            font-size: 9px;
+            color: #94a3b8;
+            font-weight: normal;
+        }
+
+        .journal-text {
+            font-size: 12px;
+            color: #ffffff;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .status-text {
+            font-size: 11px;
+            color: #00ffcc;
+            min-height: 14px;
+        }
+
+        .nav-boxes {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            border-top: 1px solid rgba(0, 210, 255, 0.2);
+            padding-top: 12px;
+            margin-top: 5px;
+        }
+        .nav-box {
+            flex: 1;
+            background: rgba(11, 15, 25, 0.6);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 10px;
+            padding: 8px 2px;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            animation: neonPulse 4s infinite;
+        }
+        .nav-box.active-tab {
+            background: rgba(0, 210, 255, 0.25);
+            border-color: #ff007f;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="tg-profile">
+            <div id="tg-avatar-container">
+                <img id="tg-avatar" class="tg-avatar" src="" alt="Avatar" style="display:none;">
+                <div id="tg-avatar-fallback" class="tg-avatar">U</div>
+            </div>
+            <span id="tg-name" class="tg-name">Майнер</span>
+        </div>
+        <div class="status-text" id="sync-status" style="font-size:10px;">Онлайн ✓</div>
+    </div>
+
+    <div class="container">
+        <div class="section-title">📖 Живий журнал</div>
+
+        <!-- Форма для нового допису -->
+        <div class="post-form">
+            <textarea id="post-content" placeholder="Напишіть новину або думку спільноті..."></textarea>
+            <button class="publish-btn" onclick="publishPost()">✍️ Опублікувати</button>
+        </div>
+
+        <!-- Стрічка дописів -->
+        <div class="journal-feed" id="journal-feed">
+            <div class="journal-card">
+                <div class="journal-text" style="text-align:center; color:#94a3b8;">Завантаження записів...</div>
+            </div>
+        </div>
+
+        <!-- Нижня навігація -->
+        <div class="nav-boxes">
+            <button class="nav-box" onclick="window.location.href='index.html'">🏠 Головна</button>
+            <button class="nav-box" onclick="window.location.href='1.html'">🪙 Майнінг</button>
+            <button class="nav-box active-tab">📖 Журнал</button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ordlwuikqsvgyybuqtj.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_rg7Z1F-ws8Y9zmUwDLXDVA_zpH6K8pw';
+        let supabaseClient = null;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch(e) {}
+
+        let tg = null;
+        try {
+            tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+        } catch(e) {}
+
+        const tgUser = tg?.initDataUnsafe?.user;
+        const userId = tgUser ? String(tgUser.id) : '409059054';
+        const userName = tgUser ? (tgUser.username ? `@${tgUser.username}` : tgUser.first_name) : '@Leslav';
+
+        document.getElementById('tg-name').textContent = userName;
+        if (tgUser && tgUser.photo_url) {
+            const avatarImg = document.getElementById('tg-avatar');
+            avatarImg.src = tgUser.photo_url;
+            avatarImg.style.display = 'block';
+            document.getElementById('tg-avatar-fallback').style.display = 'none';
+        } else {
+            document.getElementById('tg-avatar-fallback').textContent = userName.charAt(1).toUpperCase();
+        }
+
+        async function loadJournalPosts() {
+            const feedEl = document.getElementById('journal-feed');
+            if (!supabaseClient) {
+                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка підключення до бази даних</div></div>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('ray_journal')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    feedEl.innerHTML = '';
+                    data.forEach(post => {
+                        const dateStr = new Date(post.created_at).toLocaleString('uk-UA', { 
+                            month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                        });
+
+                        const card = document.createElement('div');
+                        card.className = 'journal-card';
+                        card.innerHTML = `
+                            <div class="journal-header">
+                                <span>${post.username || 'Анонім'}</span>
+                                <span class="journal-time">${dateStr}</span>
+                            </div>
+                            <div class="journal-text">${escapeHtml(post.content)}</div>
+                        `;
+                        feedEl.appendChild(card);
+                    });
+                } else {
+                    feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#94a3b8;">Поки немає записів. Будьте першим!</div></div>';
+                }
+            } catch (err) {
+                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Створіть таблицю ray_journal у Supabase</div></div>';
+            }
+        }
+
+        async function publishPost() {
+            const textarea = document.getElementById('post-content');
+            const content = textarea.value.trim();
+            const statusEl = document.getElementById('sync-status');
+
+            if (!content) {
+                statusEl.textContent = '⚠️ Введіть текст!';
+                return;
+            }
+
+            if (!supabaseClient) {
+                statusEl.textContent = '❌ Немає бази даних';
+                return;
+            }
+
+            statusEl.textContent = 'Публікація...';
+
+            try {
+                const { error } = await supabaseClient
+                    .from('ray_journal')
+                    .insert([{
+                        user_id: userId,
+                        username: userName,
+                        content: content
+                    }]);
+
+                if (error) throw error;
+
+                textarea.value = '';
+                statusEl.textContent = 'Опубліковано ✓';
+                loadJournalPosts();
+
+                if (tg && tg.HapticFeedback) {
+                    try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+                }
+            } catch (err) {
+                statusEl.textContent = '❌ Помилка публікації';
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        loadJournalPosts();
+    </script>
+</body>
+</html>
