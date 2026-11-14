@@ -242,20 +242,17 @@
     <div class="container">
         <div class="section-title">📖 Живий журнал</div>
 
-        <!-- Форма для нового допису -->
         <div class="post-form">
             <textarea id="post-content" placeholder="Напишіть новину або думку спільноті..."></textarea>
             <button class="publish-btn" onclick="publishPost()">✍️ Опублікувати</button>
         </div>
 
-        <!-- Стрічка дописів -->
         <div class="journal-feed" id="journal-feed">
             <div class="journal-card">
                 <div class="journal-text" style="text-align:center; color:#94a3b8;">Завантаження записів...</div>
             </div>
         </div>
 
-        <!-- Нижня навігація -->
         <div class="nav-boxes">
             <button class="nav-box" onclick="window.location.href='index.html'">🏠 Головна</button>
             <button class="nav-box" onclick="window.location.href='1.html'">🪙 Майнінг</button>
@@ -295,7 +292,7 @@
         async function loadJournalPosts() {
             const feedEl = document.getElementById('journal-feed');
             if (!supabaseClient) {
-                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка підключення до бази даних</div></div>';
+                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка: клієнт Supabase не ініціалізовано</div></div>';
                 return;
             }
 
@@ -311,18 +308,18 @@
                 if (data && data.length > 0) {
                     feedEl.innerHTML = '';
                     data.forEach(post => {
-                        const dateStr = new Date(post.created_at).toLocaleString('uk-UA', { 
+                        const dateStr = post.created_at ? new Date(post.created_at).toLocaleString('uk-UA', { 
                             month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                        });
+                        }) : '';
 
                         const card = document.createElement('div');
                         card.className = 'journal-card';
                         card.innerHTML = `
                             <div class="journal-header">
-                                <span>${post.username || 'Анонім'}</span>
+                                <span>${escapeHtml(post.username || 'Анонім')}</span>
                                 <span class="journal-time">${dateStr}</span>
                             </div>
-                            <div class="journal-text">${escapeHtml(post.content)}</div>
+                            <div class="journal-text">${escapeHtml(post.content || '')}</div>
                         `;
                         feedEl.appendChild(card);
                     });
@@ -331,7 +328,8 @@
                 }
             } catch (err) {
                 console.error(err);
-                feedEl.innerHTML = '<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка завантаження стрічки</div></div>';
+                // ВИВОДИМО ТОЧНИЙ ТЕКСТ ПОМИЛКИ НА ЕКРАН ДЛЯ ДІАГНОСТИКИ
+                feedEl.innerHTML = `<div class="journal-card"><div class="journal-text" style="text-align:center; color:#ff007f;">Помилка бази: ${escapeHtml(err.message || JSON.stringify(err))}</div></div>`;
             }
         }
 
@@ -377,8 +375,9 @@
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, m => map[m]);
+            return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
         loadJournalPosts();
