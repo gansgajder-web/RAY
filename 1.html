@@ -483,12 +483,10 @@
             tg.expand();
         } catch(e) {}
 
-        // Динамічне підтягування профілю з Telegram
         const tgUser = tg?.initDataUnsafe?.user;
         const userId = tgUser ? String(tgUser.id) : '409059054';
         const userName = tgUser ? (tgUser.username ? `@${tgUser.username}` : tgUser.first_name) : '@Leslav';
 
-        // Відображення нікнейма та аватарки
         document.getElementById('tg-name').textContent = userName;
         if (tgUser && tgUser.photo_url) {
             const avatarImg = document.getElementById('tg-avatar');
@@ -509,8 +507,14 @@
 
         let savedBalance = parseFloat(localStorage.getItem('ray_saved_balance')) || 0;
         let balance = 0; 
-        let maxEnergy = parseInt(localStorage.getItem('ray_max_energy')) || 500;
-        let energy = parseInt(localStorage.getItem('ray_energy')) !== NaN ? parseInt(localStorage.getItem('ray_energy')) : maxEnergy;
+        
+        let storedMaxEnergy = parseInt(localStorage.getItem('ray_max_energy'));
+        let maxEnergy = (!storedMaxEnergy || isNaN(storedMaxEnergy)) ? 500 : storedMaxEnergy;
+
+        let storedEnergy = parseInt(localStorage.getItem('ray_energy'));
+        let energy = (!storedEnergy || isNaN(storedEnergy)) ? maxEnergy : storedEnergy;
+        if (energy > maxEnergy) energy = maxEnergy;
+
         let tapReward = 0.0000000001;
         let regDate = '13.11.2026';
 
@@ -601,6 +605,7 @@
                         savedBalance = cloudBalance;
                     }
                     maxEnergy = parseInt(data.max_energy) || 500;
+                    if (energy > maxEnergy) energy = maxEnergy;
                     tapReward = parseFloat(data.tap_power) || 0.0000000001;
                     if (data.created_at) {
                         regDate = new Date(data.created_at).toLocaleDateString('uk-UA');
@@ -775,7 +780,6 @@
             setTimeout(() => plus.remove(), 900);
         });
 
-        // Відновлення енергії з часом
         setInterval(() => {
             if (energy < maxEnergy) {
                 energy = Math.min(maxEnergy, energy + 2);
