@@ -361,7 +361,6 @@
 
             <div class="status-text" id="sync-status">Збережено в хмарі ✓</div>
 
-            <!-- КНОПКА РУЧНОГО ЗБЕРЕЖЕННЯ -->
             <button class="save-btn" onclick="manualSaveClick()">💾 Зберегти прогрес</button>
         </div>
 
@@ -556,14 +555,17 @@
         async function saveImmediately() {
             syncStatusEl.textContent = 'Збереження...';
             try {
+                const cleanBalance = parseFloat(balance.toFixed(10));
+                const cleanPower = parseFloat(tapReward.toFixed(10));
+
                 await supabaseClient
                     .from('ray_mining')
                     .upsert({
                         user_id: userId,
                         username: userName,
-                        balance: balance,
+                        balance: cleanBalance,
                         max_energy: maxEnergy,
-                        tap_power: tapReward,
+                        tap_power: cleanPower,
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
                 syncStatusEl.textContent = 'Збережено в хмарі ✓';
